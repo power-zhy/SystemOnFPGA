@@ -1,0 +1,278 @@
+// 640 * 480 @ 60Hz  4:3  Industry Standard
+localparam
+	VGA_640_480_60_CLK_FREQ  = 25,  // 800 * 525 * 60
+	VGA_640_480_60_H_PW      = 96,  // pulse width
+	VGA_640_480_60_H_PV      = 1'b0,  // pulse value
+	VGA_640_480_60_H_BP      = 48,  // back porch
+	VGA_640_480_60_H_DISP    = 640,  // display time
+	VGA_640_480_60_H_FP      = 16,  // front porch
+	VGA_640_480_60_V_PW      = 2,
+	VGA_640_480_60_V_PV      = 1'b0,
+	VGA_640_480_60_V_BP      = 33,
+	VGA_640_480_60_V_DISP    = 480,
+	VGA_640_480_60_V_FP      = 10;
+
+// 640 * 480 @ 72Hz  4:3  VESA Standard
+localparam
+	VGA_640_480_72_CLK_FREQ  = 32,  // 832 * 520 * 72
+	VGA_640_480_72_H_PW      = 40,
+	VGA_640_480_72_H_PV      = 1'b0,
+	VGA_640_480_72_H_BP      = 128,
+	VGA_640_480_72_H_DISP    = 640,
+	VGA_640_480_72_H_FP      = 24,
+	VGA_640_480_72_V_PW      = 3,
+	VGA_640_480_72_V_PV      = 1'b0,
+	VGA_640_480_72_V_BP      = 28,
+	VGA_640_480_72_V_DISP    = 480,
+	VGA_640_480_72_V_FP      = 9;
+
+// 640 * 480 @ 75Hz  4:3  VESA Standard
+localparam
+	VGA_640_480_75_CLK_FREQ  = 32,  // 840 * 500 * 75
+	VGA_640_480_75_H_PW      = 64,
+	VGA_640_480_75_H_PV      = 1'b0,
+	VGA_640_480_75_H_BP      = 120,
+	VGA_640_480_75_H_DISP    = 640,
+	VGA_640_480_75_H_FP      = 16,
+	VGA_640_480_75_V_PW      = 3,
+	VGA_640_480_75_V_PV      = 1'b0,
+	VGA_640_480_75_V_BP      = 16,
+	VGA_640_480_75_V_DISP    = 480,
+	VGA_640_480_75_V_FP      = 1;
+
+// 800 * 600 @60Hz  4:3  VESA Guidelines
+localparam
+	VGA_800_600_60_CLK_FREQ  = 40,  // 1056 * 628 * 60
+	VGA_800_600_60_H_PW      = 128,
+	VGA_800_600_60_H_PV      = 1'b1,
+	VGA_800_600_60_H_BP      = 88,
+	VGA_800_600_60_H_DISP    = 800,
+	VGA_800_600_60_H_FP      = 40,
+	VGA_800_600_60_V_PW      = 4,
+	VGA_800_600_60_V_PV      = 1'b1,
+	VGA_800_600_60_V_BP      = 23,
+	VGA_800_600_60_V_DISP    = 600,
+	VGA_800_600_60_V_FP      = 1;
+
+// 800 * 600 @ 72Hz  4:3  VESA Standard
+localparam
+	VGA_800_600_72_CLK_FREQ  = 50,  // 1040 * 666 * 72
+	VGA_800_600_72_H_PW      = 120,
+	VGA_800_600_72_H_PV      = 1'b1,
+	VGA_800_600_72_H_BP      = 64,
+	VGA_800_600_72_H_DISP    = 800,
+	VGA_800_600_72_H_FP      = 56,
+	VGA_800_600_72_V_PW      = 6,
+	VGA_800_600_72_V_PV      = 1'b1,
+	VGA_800_600_72_V_BP      = 23,
+	VGA_800_600_72_V_DISP    = 600,
+	VGA_800_600_72_V_FP      = 37;
+
+// 800 * 600 @ 75Hz  4:3  VESA Standard
+localparam
+	VGA_800_600_75_CLK_FREQ  = 50,  // 1056 * 625 * 75
+	VGA_800_600_75_H_PW      = 80,
+	VGA_800_600_75_H_PV      = 1'b1,
+	VGA_800_600_75_H_BP      = 160,
+	VGA_800_600_75_H_DISP    = 800,
+	VGA_800_600_75_H_FP      = 16,
+	VGA_800_600_75_V_PW      = 3,
+	VGA_800_600_75_V_PV      = 1'b1,
+	VGA_800_600_75_V_BP      = 21,
+	VGA_800_600_75_V_DISP    = 600,
+	VGA_800_600_75_V_FP      = 1;
+
+// 1024 * 768 @ 60Hz  4:3  VESA Guidelines
+localparam
+	VGA_1024_768_60_CLK_FREQ  = 65,  // 1344 * 806 * 60
+	VGA_1024_768_60_H_PW      = 136,
+	VGA_1024_768_60_H_PV      = 1'b0,
+	VGA_1024_768_60_H_BP      = 160,
+	VGA_1024_768_60_H_DISP    = 1024,
+	VGA_1024_768_60_H_FP      = 24,
+	VGA_1024_768_60_V_PW      = 6,
+	VGA_1024_768_60_V_PV      = 1'b0,
+	VGA_1024_768_60_V_BP      = 29,
+	VGA_1024_768_60_V_DISP    = 768,
+	VGA_1024_768_60_V_FP      = 3;
+
+// 1024 * 768 @ 70Hz  4:3  VESA Standard
+localparam
+	VGA_1024_768_70_CLK_FREQ  = 75,  // 1328 * 806 * 70
+	VGA_1024_768_70_H_PW      = 136,
+	VGA_1024_768_70_H_PV      = 1'b0,
+	VGA_1024_768_70_H_BP      = 144,
+	VGA_1024_768_70_H_DISP    = 1024,
+	VGA_1024_768_70_H_FP      = 24,
+	VGA_1024_768_70_V_PW      = 6,
+	VGA_1024_768_70_V_PV      = 1'b0,
+	VGA_1024_768_70_V_BP      = 29,
+	VGA_1024_768_70_V_DISP    = 768,
+	VGA_1024_768_70_V_FP      = 3;
+
+// 1280 * 768 @ 60Hz  5:3  CVT
+localparam
+	VGA_1280_768_60_CLK_FREQ  = 80,  // 1664 * 798 * 60
+	VGA_1280_768_60_H_PW      = 128,
+	VGA_1280_768_60_H_PV      = 1'b0,
+	VGA_1280_768_60_H_BP      = 192,
+	VGA_1280_768_60_H_DISP    = 1280,
+	VGA_1280_768_60_H_FP      = 64,
+	VGA_1280_768_60_V_PW      = 7,
+	VGA_1280_768_60_V_PV      = 1'b1,
+	VGA_1280_768_60_V_BP      = 20,
+	VGA_1280_768_60_V_DISP    = 768,
+	VGA_1280_768_60_V_FP      = 3;
+
+// 1280 * 768 @ 75Hz  5:3  CVT
+localparam
+	VGA_1280_768_75_CLK_FREQ  = 102,  // 1696 * 805 * 75
+	VGA_1280_768_75_H_PW      = 128,
+	VGA_1280_768_75_H_PV      = 1'b0,
+	VGA_1280_768_75_H_BP      = 208,
+	VGA_1280_768_75_H_DISP    = 1280,
+	VGA_1280_768_75_H_FP      = 80,
+	VGA_1280_768_75_V_PW      = 7,
+	VGA_1280_768_75_V_PV      = 1'b1,
+	VGA_1280_768_75_V_BP      = 27,
+	VGA_1280_768_75_V_DISP    = 768,
+	VGA_1280_768_75_V_FP      = 3;
+
+// 1280 * 960 @ 60Hz  4:3  VESA Standard
+localparam
+	VGA_1280_960_60_CLK_FREQ  = 108,  // 1800 * 1000 * 60
+	VGA_1280_960_60_H_PW      = 112,
+	VGA_1280_960_60_H_PV      = 1'b1,
+	VGA_1280_960_60_H_BP      = 312,
+	VGA_1280_960_60_H_DISP    = 1280,
+	VGA_1280_960_60_H_FP      = 96,
+	VGA_1280_960_60_V_PW      = 3,
+	VGA_1280_960_60_V_PV      = 1'b1,
+	VGA_1280_960_60_V_BP      = 36,
+	VGA_1280_960_60_V_DISP    = 960,
+	VGA_1280_960_60_V_FP      = 1;
+
+// 1280 * 960 @ 85Hz  4:3  VESA Standard
+localparam
+	VGA_1280_960_85_CLK_FREQ  = 150,  // 1728 * 1011 * 85
+	VGA_1280_960_85_H_PW      = 160,
+	VGA_1280_960_85_H_PV      = 1'b1,
+	VGA_1280_960_85_H_BP      = 224,
+	VGA_1280_960_85_H_DISP    = 1280,
+	VGA_1280_960_85_H_FP      = 64,
+	VGA_1280_960_85_V_PW      = 3,
+	VGA_1280_960_85_V_PV      = 1'b1,
+	VGA_1280_960_85_V_BP      = 47,
+	VGA_1280_960_85_V_DISP    = 960,
+	VGA_1280_960_85_V_FP      = 1;
+
+// 1280 * 1024 @ 60Hz  5:4  VESA Standard
+localparam
+	VGA_1280_1024_60_CLK_FREQ  = 108,  // 1688 * 1066 * 60
+	VGA_1280_1024_60_H_PW      = 112,
+	VGA_1280_1024_60_H_PV      = 1'b1,
+	VGA_1280_1024_60_H_BP      = 248,
+	VGA_1280_1024_60_H_DISP    = 1280,
+	VGA_1280_1024_60_H_FP      = 48,
+	VGA_1280_1024_60_V_PW      = 3,
+	VGA_1280_1024_60_V_PV      = 1'b1,
+	VGA_1280_1024_60_V_BP      = 38,
+	VGA_1280_1024_60_V_DISP    = 1024,
+	VGA_1280_1024_60_V_FP      = 1;
+
+// 1280 * 1024 @ 75Hz  5:4  VESA Standard
+localparam
+	VGA_1280_1024_75_CLK_FREQ  = 135,  // 1688 * 1066 * 75
+	VGA_1280_1024_75_H_PW      = 144,
+	VGA_1280_1024_75_H_PV      = 1'b1,
+	VGA_1280_1024_75_H_BP      = 248,
+	VGA_1280_1024_75_H_DISP    = 1280,
+	VGA_1280_1024_75_H_FP      = 16,
+	VGA_1280_1024_75_V_PW      = 3,
+	VGA_1280_1024_75_V_PV      = 1'b1,
+	VGA_1280_1024_75_V_BP      = 38,
+	VGA_1280_1024_75_V_DISP    = 1024,
+	VGA_1280_1024_75_V_FP      = 1;
+
+// 1360 * 768 @ 60Hz  16:9  VESA Standard
+localparam
+	VGA_1360_768_60_CLK_FREQ  = 85,  // 1792 * 795 * 60
+	VGA_1360_768_60_H_PW      = 112,
+	VGA_1360_768_60_H_PV      = 1'b1,
+	VGA_1360_768_60_H_BP      = 256,
+	VGA_1360_768_60_H_DISP    = 1360,
+	VGA_1360_768_60_H_FP      = 64,
+	VGA_1360_768_60_V_PW      = 6,
+	VGA_1360_768_60_V_PV      = 1'b1,
+	VGA_1360_768_60_V_BP      = 18,
+	VGA_1360_768_60_V_DISP    = 768,
+	VGA_1360_768_60_V_FP      = 3;
+
+// maximum
+localparam
+	VGA_H  = 1800,
+	VGA_V  = 1066,
+	VGA_H_DISP = 1360,
+	VGA_V_DISP = 1024,
+	FONT_H = 8,
+	FONT_V = 16,
+	ASCII_H = VGA_H_DISP / FONT_H,
+	ASCII_V = VGA_V_DISP / FONT_V,
+	H_COUNT_WIDTH = GET_WIDTH(VGA_H),
+	V_COUNT_WIDTH = GET_WIDTH(VGA_V),
+	P_COUNT_WIDTH = GET_WIDTH(VGA_H*VGA_V),
+	FONT_H_WIDTH = GET_WIDTH(FONT_H-1),
+	FONT_V_WIDTH = GET_WIDTH(FONT_V-1),
+	ASCII_H_WIDTH = GET_WIDTH(ASCII_H-1),
+	ASCII_V_WIDTH = GET_WIDTH(ASCII_V-1);
+
+// VGA codes
+localparam
+	VGA_CODE_640_480_60    = 1,
+	VGA_CODE_640_480_72    = 2,
+	VGA_CODE_640_480_75    = 3,
+	VGA_CODE_800_600_60    = 4,
+	VGA_CODE_800_600_72    = 5,
+	VGA_CODE_800_600_75    = 6,
+	VGA_CODE_1024_768_60   = 7,
+	VGA_CODE_1024_768_70   = 8,
+	VGA_CODE_1280_768_60   = 9,
+	VGA_CODE_1280_768_75   = 10,
+	VGA_CODE_1280_960_60   = 11,
+	VGA_CODE_1280_960_85   = 12,
+	VGA_CODE_1280_1024_60  = 13,
+	VGA_CODE_1280_1024_75  = 14,
+	VGA_CODE_1360_768_60   = 15;
+
+// clock generator parameters (from 100MHz)
+localparam
+	VGA_640_480_60_M    = 2-1,  // multiply
+	VGA_640_480_60_D    = 8-1,  // division
+	VGA_640_480_72_M    = 5-1,
+	VGA_640_480_72_D    = 16-1,
+	VGA_640_480_75_M    = 5-1,
+	VGA_640_480_75_D    = 16-1,
+	VGA_800_600_60_M    = 2-1,
+	VGA_800_600_60_D    = 5-1,
+	VGA_800_600_72_M    = 2-1,
+	VGA_800_600_72_D    = 4-1,
+	VGA_800_600_75_M    = 2-1,
+	VGA_800_600_75_D    = 4-1,
+	VGA_1024_768_60_M   = 13-1,
+	VGA_1024_768_60_D   = 20-1,
+	VGA_1024_768_70_M   = 3-1,
+	VGA_1024_768_70_D   = 4-1,
+	VGA_1280_768_60_M   = 4-1,
+	VGA_1280_768_60_D   = 5-1,
+	VGA_1280_768_75_M   = 2-1,  // 128-1
+	VGA_1280_768_75_D   = 2-1,  // 125-1
+	VGA_1280_960_60_M   = 27-1,
+	VGA_1280_960_60_D   = 25-1,
+	VGA_1280_960_85_M   = 3-1,
+	VGA_1280_960_85_D   = 2-1,
+	VGA_1280_1024_60_M  = 27-1,
+	VGA_1280_1024_60_D  = 25-1,
+	VGA_1280_1024_75_M  = 27-1,
+	VGA_1280_1024_75_D  = 20-1,
+	VGA_1360_768_60_M   = 17-1,
+	VGA_1360_768_60_D   = 20-1;

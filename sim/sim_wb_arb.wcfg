@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Verilog/SystemOnFPGA/sim_wb_arb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="sim_wb_arb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="12" />
+   <wvobject fp_name="/sim_wb_arb/uut/wb_clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wb_clk</obj_property>
+      <obj_property name="ObjectShortName">wb_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/wb_rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wb_rst</obj_property>
+      <obj_property name="ObjectShortName">wb_rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/m0_cyc_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">m0_cyc_i</obj_property>
+      <obj_property name="ObjectShortName">m0_cyc_i</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/m1_cyc_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">m1_cyc_i</obj_property>
+      <obj_property name="ObjectShortName">m1_cyc_i</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/m2_cyc_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">m2_cyc_i</obj_property>
+      <obj_property name="ObjectShortName">m2_cyc_i</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/m3_cyc_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">m3_cyc_i</obj_property>
+      <obj_property name="ObjectShortName">m3_cyc_i</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/curr_cyc" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">curr_cyc</obj_property>
+      <obj_property name="ObjectShortName">curr_cyc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/next_cyc" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">next_cyc</obj_property>
+      <obj_property name="ObjectShortName">next_cyc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/curr_master" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">curr_master[1:0]</obj_property>
+      <obj_property name="ObjectShortName">curr_master[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/next_master" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">next_master[1:0]</obj_property>
+      <obj_property name="ObjectShortName">next_master[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/m_cyc_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">m_cyc_i</obj_property>
+      <obj_property name="ObjectShortName">m_cyc_i</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_wb_arb/uut/master" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">master[1:0]</obj_property>
+      <obj_property name="ObjectShortName">master[1:0]</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+   </wvobject>
+</wave_config>
