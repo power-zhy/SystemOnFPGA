@@ -422,7 +422,6 @@ module controller (/*AUTOARG*/
 				exe_b_src = EXE_B_IMM;
 				exe_alu_oper = EXE_ALU_ADD;
 				mem_type = MEM_TYPE_WORD;
-				mem_ext = 1;
 				mem_ren = 1;
 				wb_addr_src = WB_ADDR_RT;
 				wb_data_src = WB_DATA_MEM;

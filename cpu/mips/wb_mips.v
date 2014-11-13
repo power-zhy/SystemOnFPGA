@@ -66,8 +66,8 @@ module wb_mips (
 	wire ic_inv;
 	wire itlb_ren;
 	wire [31:0] itlb_addr;
-	wire itlb_ack;
-	wire [31:0] itlb_data;
+	reg itlb_ack;
+	reg [31:0] itlb_data;
 	
 	// memory signals
 	wire mem_ren, mem_wen;
@@ -76,15 +76,16 @@ module wb_mips (
 	wire mem_ext;
 	wire [31:PAGE_ADDR_BITS] mem_addr_logical, mem_addr_physical;
 	wire [PAGE_ADDR_BITS-1:0] mem_addr_page;
-	wire [31:0] mem_data_r, mem_data_w;
+	reg [31:0] mem_data_r;
+	wire [31:0] mem_data_w;
 	wire mem_unalign, mem_page_fault;
 	wire mem_unauth_user, mem_unauth_write;
 	wire dc_en, dc_lock;
 	wire dc_inv;
 	wire dtlb_ren;
 	wire [31:0] dtlb_addr;
-	wire dtlb_ack;
-	wire [31:0] dtlb_data;
+	reg dtlb_ack;
+	reg [31:0] dtlb_data;
 	
 	wire exception;
 	wire inst_auth_user, inst_auth_exec;
@@ -139,6 +140,7 @@ module wb_mips (
 		.exception(exception)
 		);
 	
+	`ifndef NO_MMU
 	// instruction MMU
 	mmu #(
 		.PAGE_ADDR_BITS(PAGE_ADDR_BITS)
@@ -165,8 +167,59 @@ module wb_mips (
 		inst_unauth_user = inst_ren & ~inst_auth_user,
 		inst_unauth_exec = inst_ren & ~inst_auth_exec;
 	
+	// data MMU
+	mmu #(
+		.PAGE_ADDR_BITS(PAGE_ADDR_BITS)
+		) DMMU (
+		.clk(clk),
+		.rst(rst | wd_rst | mmu_inv),
+		.en_mmu(mmu_en & (mem_ren | mem_wen)),
+		.stall(dmmu_stall),
+		.pdb_addr(pdb_addr),
+		.logical(mem_addr_logical),
+		.physical(mem_addr_physical),
+		.page_fault(mem_page_fault),
+		.auth_user(mem_auth_user),
+		.auth_exec(),
+		.auth_write(mem_auth_write),
+		.en_cache(dc_en),
+		.ren(dtlb_ren),
+		.addr(dtlb_addr),
+		.ack(dtlb_ack),
+		.data(dtlb_data)
+		);
+	
+	assign
+		mem_unauth_user = (mem_ren | mem_wen) & ~mem_auth_user,
+		mem_unauth_write = (mem_ren | mem_wen) & ~mem_auth_write;
+	
+	`else
+	assign
+		immu_stall = 0,
+		inst_addr_physical = inst_addr_logical,
+		inst_page_fault = 0,
+		inst_auth_user = 0,
+		inst_auth_exec = 0,
+		ic_en = 0,
+		itlb_ren = 0,
+		itlb_addr = 0,
+		dmmu_stall = 0,
+		mem_addr_physical = mem_addr_logical,
+		mem_page_fault = 0,
+		mem_auth_user = 0,
+		mem_auth_write = 0,
+		dc_en = 0,
+		dtlb_ren = 0,
+		dtlb_addr = 0;
+	
+	`define NO_IC
+	`define NO_DC
+	
+	`endif
+	
+	`ifndef NO_IC
 	// instruction cache
-	/*wb_cmu #(
+	wb_cmu #(
 		.TAG_BITS(22),
 		.LINE_WORDS(4)
 		) ICMU (
@@ -196,11 +249,9 @@ module wb_mips (
 		.wbm_data_i(icmu_data_i),
 		.wbm_data_o(icmu_data_o),
 		.wbm_ack_i(icmu_ack_i)
-		);*/
-	
-	wb_cpu_conn #(
-		.STALL_HALF_DELAY(1)
-		) ICMU (
+		);
+	`else
+	wb_cpu_conn ICMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
 		.suspend(exception | inst_page_fault | inst_unauth_user | inst_unauth_exec),
@@ -226,84 +277,70 @@ module wb_mips (
 		.wbm_data_o(icmu_data_o),
 		.wbm_ack_i(icmu_ack_i)
 		);
+	`endif
 	
-	// data MMU
-	mmu #(
-		.PAGE_ADDR_BITS(PAGE_ADDR_BITS)
-		) DMMU (
-		.clk(clk),
-		.rst(rst | wd_rst | mmu_inv),
-		.en_mmu(mmu_en & (mem_ren | mem_wen)),
-		.stall(dmmu_stall),
-		.pdb_addr(pdb_addr),
-		.logical(mem_addr_logical),
-		.physical(mem_addr_physical),
-		.page_fault(mem_page_fault),
-		.auth_user(mem_auth_user),
-		.auth_exec(),
-		.auth_write(mem_auth_write),
-		.en_cache(dc_en),
-		.ren(dtlb_ren),
-		.addr(dtlb_addr),
-		.ack(dtlb_ack),
-		.data(dtlb_data)
-		);
-	
-	assign
-		mem_unauth_user = (mem_ren | mem_wen) & ~mem_auth_user,
-		mem_unauth_write = (mem_ren | mem_wen) & ~mem_auth_write;
-	
-	wire dcmu_en_cache;
-	wire [31:0] dcmu_addr_rw;
-	wire [1:0] dcmu_addr_type;
-	wire dcmu_sign_ext;
-	wire dcmu_en_r;
+	reg dcmu_en_cache;
+	reg [31:0] dcmu_addr_rw;
+	reg [1:0] dcmu_addr_type;
+	reg dcmu_sign_ext;
+	reg dcmu_en_r;
 	wire [31:0] dcmu_data_r;
-	wire dcmu_en_w;
-	wire [31:0] dcmu_data_w;
-	wire dcmu_en_f;
-	wire dcmu_lock;
+	reg dcmu_en_w;
+	reg [31:0] dcmu_data_w;
+	reg dcmu_en_f;
+	reg dcmu_lock;
 	wire dcmu_stall;
 	
-	cmu_arb #(
-		.STALL_HALF_DELAY(1)
-		) DCMU_ARB (
-		.clk(clk),
-		.rst(rst | wd_rst),
-		.itlb_ren(itlb_ren),
-		.itlb_addr(itlb_addr),
-		.itlb_ack(itlb_ack),
-		.itlb_data(itlb_data),
-		.dtlb_ren(dtlb_ren),
-		.dtlb_addr(dtlb_addr),
-		.dtlb_ack(dtlb_ack),
-		.dtlb_data(dtlb_data),
-		.mem_cen(dc_en),
-		.mem_addr({mem_addr_physical, mem_addr_page}),
-		.mem_type(mem_type),
-		.mem_ext(mem_ext),
-		.mem_ren(mem_ren),
-		.mem_dout(mem_data_r),
-		.mem_wen(mem_wen),
-		.mem_din(mem_data_w),
-		.mem_fen(dc_inv),
-		.mem_lock(dc_lock),
-		.en_cache(dcmu_en_cache),
-		.addr_rw(dcmu_addr_rw),
-		.addr_type(dcmu_addr_type),
-		.sign_ext(dcmu_sign_ext),
-		.en_r(dcmu_en_r),
-		.data_r(dcmu_data_r),
-		.en_w(dcmu_en_w),
-		.data_w(dcmu_data_w),
-		.en_f(dcmu_en_f),
-		.lock(dcmu_lock),
-		.stall(dcmu_stall),
-		.stall_total(dcache_stall)
-		);
+	always @(*) begin
+		dcmu_en_cache = 0;
+		dcmu_addr_rw = 0;
+		dcmu_addr_type = 0;
+		dcmu_sign_ext = 0;
+		dcmu_en_r = 0;
+		dcmu_en_w = 0;
+		dcmu_data_w = 0;
+		dcmu_en_f = 0;
+		dcmu_lock = 0;
+		itlb_ack = 0;
+		itlb_data = 0;
+		dtlb_ack = 0;
+		dtlb_data = 0;
+		mem_data_r = 0;
+		if (itlb_ren) begin
+			dcmu_en_cache = 1;
+			dcmu_addr_rw = itlb_addr;
+			dcmu_addr_type = MEM_TYPE_WORD;
+			dcmu_en_r = 1;
+			itlb_ack = ~dcmu_stall;
+			itlb_data = dcmu_data_r;
+		end
+		else if (dtlb_ren) begin
+			dcmu_en_cache = 1;
+			dcmu_addr_rw = dtlb_addr;
+			dcmu_addr_type = MEM_TYPE_WORD;
+			dcmu_en_r = 1;
+			dtlb_ack = ~dcmu_stall;
+			dtlb_data = dcmu_data_r;
+		end
+		else begin
+			dcmu_en_cache = dc_en;
+			dcmu_addr_rw = {mem_addr_physical, mem_addr_page};
+			dcmu_addr_type = mem_type;
+			dcmu_sign_ext = mem_ext;
+			dcmu_en_r = mem_ren;
+			dcmu_en_w = mem_wen;
+			dcmu_data_w = mem_data_w;
+			dcmu_en_f = dc_inv;
+			dcmu_lock = dc_lock;
+			mem_data_r = dcmu_data_r;
+		end
+	end
 	
+	assign dcache_stall = dcmu_stall;
+	
+	`ifndef NO_DC
 	// data cache
-	/*wb_cmu #(
+	wb_cmu #(
 		.TAG_BITS(22),
 		.LINE_WORDS(4)
 		) DCMU (
@@ -333,11 +370,9 @@ module wb_mips (
 		.wbm_data_i(dcmu_data_i),
 		.wbm_data_o(dcmu_data_o),
 		.wbm_ack_i(dcmu_ack_i)
-		);*/
-	
-	wb_cpu_conn #(
-		.STALL_HALF_DELAY(0)
-		) DCMU (
+		);
+	`else
+	wb_cpu_conn DCMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
 		.suspend(exception | mem_page_fault | mem_unauth_user | mem_unauth_write),
@@ -363,5 +398,6 @@ module wb_mips (
 		.wbm_data_o(dcmu_data_o),
 		.wbm_ack_i(dcmu_ack_i)
 		);
+	`endif
 	
 endmodule

@@ -18,7 +18,7 @@ module wb_cpu_conn (
 	input wire en_w,  // write enable signal
 	input wire [31:0] data_w,  // data write in
 	input wire lock,  // keep current data to avoid process repeating
-	output wire stall,  // stall other component when CMU is busy
+	output reg stall,  // stall other component when CMU is busy
 	output reg unalign,  // address unaligned error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
@@ -35,8 +35,15 @@ module wb_cpu_conn (
 	);
 	
 	`include "cpu_define.vh"
-	parameter
-		STALL_HALF_DELAY = 1;  // delay the stall signal half clock to prevent close logic loop
+	
+	// delay lock signal half a clock to prevent close logic loop
+	reg lock_delay;
+	always @(negedge clk) begin
+		if (rst)
+			lock_delay <= 0;
+		else
+			lock_delay <= lock;
+	end
 	
 	// alignment
 	reg [3:0] sel_align;
@@ -47,7 +54,7 @@ module wb_cpu_conn (
 		data_r = 0;
 		data_align_w = 0;
 		unalign = 0;
-		if (~rst && (en_r | en_w)) case (addr_type[1:0])
+		if (en_r || en_w) case (addr_type[1:0])
 			MEM_TYPE_WORD: case (addr_rw[1:0])
 				2'b00: begin
 					sel_align = 4'b1111;
@@ -122,7 +129,7 @@ module wb_cpu_conn (
 					next_state = S_UNCACHE;
 			end
 			S_UNCACHE_LOCK: begin
-				if (lock)
+				if (lock_delay)
 					next_state = S_UNCACHE_LOCK;
 				else
 					next_state = S_IDLE;
@@ -172,25 +179,13 @@ module wb_cpu_conn (
 	end
 	
 	// stall
-	reg stall_inner, stall_delay;
-	
-	always @(*) begin  // "stall" must be uttered before next positive clock edge, but using pure logic may lead to close logic loops
-		stall_inner = 0;
+	always @(*) begin
+		stall = 0;
 		if (~suspend) case (next_state)
-			S_IDLE: stall_inner = 0;
-			S_UNCACHE: stall_inner = 1;
-			S_UNCACHE_LOCK: stall_inner = wbm_cyc_o & wbm_ack_i;
+			S_IDLE: stall = 0;
+			S_UNCACHE: stall = 1;
+			S_UNCACHE_LOCK: stall = wbm_cyc_o & wbm_ack_i;
 		endcase
 	end
-	
-	always @(negedge clk) begin
-		if (rst || suspend)
-			stall_delay <= 0;
-		else
-			stall_delay <= stall_inner;
-	end
-	
-	assign
-		stall = STALL_HALF_DELAY ? stall_delay : stall_inner;
 	
 endmodule

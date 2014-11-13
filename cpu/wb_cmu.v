@@ -19,7 +19,7 @@ module wb_cmu (
 	input wire [31:0] data_w,  // data write in
 	input wire en_f,  // flush enable signal
 	input wire lock,  // keep current data to avoid process repeating
-	output wire stall,  // stall other component when CMU is busy
+	output reg stall,  // stall other component when CMU is busy
 	output reg unalign,  // address unaligned error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
@@ -40,12 +40,19 @@ module wb_cmu (
 	parameter
 		TAG_BITS = 22,  // tag length
 		LINE_WORDS = 4;  // number of words per-line
-	parameter
-		STALL_HALF_DELAY = 1;  // delay the stall signal half clock to prevent close logic loop
 	localparam
 		LINE_WORDS_WIDTH = GET_WIDTH(LINE_WORDS-1),  // 2
 		LINE_INDEX_WIDTH = 32 - TAG_BITS - LINE_WORDS_WIDTH - 2,  // 6
 		LINE_NUM = 1 << LINE_INDEX_WIDTH;  // 64
+	
+	// delay lock signal half a clock to prevent close logic loop
+	reg lock_delay;
+	always @(negedge clk) begin
+		if (rst)
+			lock_delay <= 0;
+		else
+			lock_delay <= lock;
+	end
 	
 	// cache core
 	reg cache_store;
@@ -222,7 +229,7 @@ module wb_cmu (
 					next_state = S_UNCACHE;
 			end
 			S_UNCACHE_LOCK: begin
-				if (lock)
+				if (lock_delay)
 					next_state = S_UNCACHE_LOCK;
 				else
 					next_state = S_IDLE;
@@ -277,9 +284,7 @@ module wb_cmu (
 			S_FILL, S_FILL_WAIT: begin
 				cache_addr = {addr_rw[31:LINE_WORDS_WIDTH+2], word_count, 2'b00};
 				cache_din = wbm_data_i;
-				if (wbm_ack_i) begin
-					cache_store = 1;
-				end
+				cache_store = wbm_ack_i;
 			end
 			S_INVALID: begin
 				cache_addr = {{TAG_BITS{1'b0}}, need_flush_addr, next_word_count, 2'b00};
@@ -376,31 +381,19 @@ module wb_cmu (
 	always @(*) begin
 		data_align_r = 0;
 		if (~suspend) case (state)
-			S_IDLE: data_align_r = cache_dout;
+			S_IDLE, S_FILL_WAIT: data_align_r = cache_dout;
 			S_UNCACHE_LOCK: data_align_r = uncache_buf;
 		endcase
 	end
 	
 	// stall
-	reg stall_inner, stall_delay;
-	
 	always @(*) begin
-		stall_inner = 0;
+		stall = 0;
 		if (~suspend) case (next_state)
-			S_IDLE: stall_inner = 0;
-			S_UNCACHE_LOCK: stall_inner = wbm_cyc_o & wbm_ack_i;
-			default: stall_inner = 1;
+			S_IDLE: stall = 0;
+			S_UNCACHE_LOCK: stall = wbm_cyc_o & wbm_ack_i;
+			default: stall = 1;
 		endcase
 	end
-	
-	always @(negedge clk) begin
-		if (rst || suspend)
-			stall_delay <= 0;
-		else
-			stall_delay <= stall_inner;
-	end
-	
-	assign
-		stall = STALL_HALF_DELAY ? stall_delay : stall_inner;
 	
 endmodule
