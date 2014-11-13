@@ -258,15 +258,31 @@ module cp0 (
 		ir = ier[31] & (|(ier[30:0] & icr[30:0]));
 	
 	// pipeline control
+	reg ir_en, ir_en_pending;
+	wire ir_valid;
+	
+	// interrupt can not be handled when current instruction in MEM(where exception is checked) is invalid, as no PC is valid to write to EPC
+	always @(posedge clk) begin
+		ir_en <= ir_en_pending;
+	end
+	
+	assign ir_valid = ir & ir_en & mem_valid;
+	
 	`ifdef DEBUG
 	reg debug_step_prev;
+	reg fatal = 0;  // when fatal error detected, stop whole CPU permanently and only step execution is allowed
 	
 	always @(posedge clk) begin
 		debug_step_prev <= debug_step;
 	end
-	`endif
 	
-	reg ir_en, ir_en_pending;
+	always @(posedge clk) begin
+		if (rst || wd_rst)
+			fatal <= 0;
+		else if (sr[31] && (ex || ir_valid || syscall_mem))
+			fatal <= 1;
+	end
+	`endif
 	
 	always @(*) begin
 		if_rst = 0;
@@ -280,7 +296,7 @@ module cp0 (
 		wb_en = 1;
 		ir_en_pending = 1;
 		`ifdef DEBUG
-		if (debug_en && ~(~debug_step_prev && debug_step)) begin
+		if ((debug_en || fatal) && ~(~debug_step_prev && debug_step)) begin
 			if_en = 0;
 			id_en = 0;
 			exe_en = 0;
@@ -326,16 +342,11 @@ module cp0 (
 		// as privilege instruction may change many important CPU configurations, make sure the next instruction be fetched after this one complete.
 		// actually, the next one instruction may still be incompatible with the changed configurations.
 		// it also make sure that this privilege instruction will not cause exception.
-		else if (is_privilege | is_privilege_exe) begin
+		else if (is_privilege || is_privilege_exe) begin
 			if_en = 0;
 			id_rst = 1;
 			ir_en_pending = 0;
 		end
-	end
-	
-	// interrupt can not be handled when current instruction in MEM(where exception is checked) is invalid, as no PC is valid to write to EPC
-	always @(posedge clk) begin
-		ir_en <= ir_en_pending & mem_valid;
 	end
 	
 	// Exception Handler Base Register
@@ -371,7 +382,7 @@ module cp0 (
 			ear <= ex_ear;
 			epcr <= {epc[31:2], 1'b0, sr[0]};
 		end
-		else if (ir_en && ir) begin
+		else if (ir_valid) begin
 			sr[31:28] <= 4'b0100;
 			sr[0] <= 1'b0;
 			epcr <= {epc[31:2], 1'b0, sr[0]};
@@ -405,7 +416,7 @@ module cp0 (
 			exception = 1;
 			exception_target = {ehbr[31:2], 2'b00};
 		end
-		else if (ir_en && ir) begin
+		else if (ir_valid) begin
 			exception = 1;
 			exception_target = {ehbr[31:2], 2'b00};
 		end

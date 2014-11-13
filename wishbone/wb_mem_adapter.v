@@ -58,8 +58,7 @@ module wb_mem_adapter (
 	
 	fifo_asy #(
 		.DATA_BITS(32),
-		.ADDR_BITS(BUF_ADDR_BITS),
-		.STATE_VIA_CLOCK(1)
+		.ADDR_BITS(BUF_ADDR_BITS)
 		) FIFO_W (
 		.rst(rst | w_rst),
 		.clk_w(wbs_clk_i),
@@ -78,8 +77,7 @@ module wb_mem_adapter (
 	
 	fifo_asy #(
 		.DATA_BITS(32),
-		.ADDR_BITS(BUF_ADDR_BITS),
-		.STATE_VIA_CLOCK(1)
+		.ADDR_BITS(BUF_ADDR_BITS)
 		) FIFO_R (
 		.rst(rst | r_rst),
 		.clk_w(mem_clk),

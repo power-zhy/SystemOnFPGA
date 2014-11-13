@@ -64,10 +64,10 @@ module wb_mips (
 	wire inst_unauth_user, inst_unauth_exec;
 	wire ic_en, ic_lock;
 	wire ic_inv;
-	wire immu_ren;
-	wire [31:0] immu_addr;
-	wire immu_ack;
-	wire [31:0] immu_data;
+	wire itlb_ren;
+	wire [31:0] itlb_addr;
+	wire itlb_ack;
+	wire [31:0] itlb_data;
 	
 	// memory signals
 	wire mem_ren, mem_wen;
@@ -81,10 +81,10 @@ module wb_mips (
 	wire mem_unauth_user, mem_unauth_write;
 	wire dc_en, dc_lock;
 	wire dc_inv;
-	wire dmmu_ren;
-	wire [31:0] dmmu_addr;
-	wire dmmu_ack;
-	wire [31:0] dmmu_data;
+	wire dtlb_ren;
+	wire [31:0] dtlb_addr;
+	wire dtlb_ack;
+	wire [31:0] dtlb_data;
 	
 	wire exception;
 	wire inst_auth_user, inst_auth_exec;
@@ -155,10 +155,10 @@ module wb_mips (
 		.auth_exec(inst_auth_exec),
 		.auth_write(),
 		.en_cache(ic_en),
-		.ren(immu_ren),
-		.addr(immu_addr),
-		.ack(immu_ack),
-		.data(immu_data)
+		.ren(itlb_ren),
+		.addr(itlb_addr),
+		.ack(itlb_ack),
+		.data(itlb_data)
 		);
 	
 	assign
@@ -198,7 +198,9 @@ module wb_mips (
 		.wbm_ack_i(icmu_ack_i)
 		);*/
 	
-	wb_cpu_conn ICMU (
+	wb_cpu_conn #(
+		.STALL_HALF_DELAY(1)
+		) ICMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
 		.suspend(exception | inst_page_fault | inst_unauth_user | inst_unauth_exec),
@@ -241,15 +243,64 @@ module wb_mips (
 		.auth_exec(),
 		.auth_write(mem_auth_write),
 		.en_cache(dc_en),
-		.ren(dmmu_ren),
-		.addr(dmmu_addr),
-		.ack(dmmu_ack),
-		.data(dmmu_data)
+		.ren(dtlb_ren),
+		.addr(dtlb_addr),
+		.ack(dtlb_ack),
+		.data(dtlb_data)
 		);
 	
 	assign
 		mem_unauth_user = (mem_ren | mem_wen) & ~mem_auth_user,
 		mem_unauth_write = (mem_ren | mem_wen) & ~mem_auth_write;
+	
+	wire dcmu_en_cache;
+	wire [31:0] dcmu_addr_rw;
+	wire [1:0] dcmu_addr_type;
+	wire dcmu_sign_ext;
+	wire dcmu_en_r;
+	wire [31:0] dcmu_data_r;
+	wire dcmu_en_w;
+	wire [31:0] dcmu_data_w;
+	wire dcmu_en_f;
+	wire dcmu_lock;
+	wire dcmu_stall;
+	
+	cmu_arb #(
+		.STALL_HALF_DELAY(1)
+		) DCMU_ARB (
+		.clk(clk),
+		.rst(rst | wd_rst),
+		.itlb_ren(itlb_ren),
+		.itlb_addr(itlb_addr),
+		.itlb_ack(itlb_ack),
+		.itlb_data(itlb_data),
+		.dtlb_ren(dtlb_ren),
+		.dtlb_addr(dtlb_addr),
+		.dtlb_ack(dtlb_ack),
+		.dtlb_data(dtlb_data),
+		.mem_cen(dc_en),
+		.mem_addr({mem_addr_physical, mem_addr_page}),
+		.mem_type(mem_type),
+		.mem_ext(mem_ext),
+		.mem_ren(mem_ren),
+		.mem_dout(mem_data_r),
+		.mem_wen(mem_wen),
+		.mem_din(mem_data_w),
+		.mem_fen(dc_inv),
+		.mem_lock(dc_lock),
+		.en_cache(dcmu_en_cache),
+		.addr_rw(dcmu_addr_rw),
+		.addr_type(dcmu_addr_type),
+		.sign_ext(dcmu_sign_ext),
+		.en_r(dcmu_en_r),
+		.data_r(dcmu_data_r),
+		.en_w(dcmu_en_w),
+		.data_w(dcmu_data_w),
+		.en_f(dcmu_en_f),
+		.lock(dcmu_lock),
+		.stall(dcmu_stall),
+		.stall_total(dcache_stall)
+		);
 	
 	// data cache
 	/*wb_cmu #(
@@ -259,17 +310,17 @@ module wb_mips (
 		.clk(clk),
 		.rst(rst | wd_rst),
 		.suspend(exception | mem_page_fault | mem_unauth_user | mem_unauth_write),
-		.en_cache(dc_en),
-		.addr_rw({mem_addr_physical, mem_addr_page}),
-		.addr_type(mem_type),
-		.sign_ext(mem_ext),
-		.en_r(mem_ren),
-		.data_r(mem_data_r),
-		.en_w(mem_wen),
-		.data_w(mem_data_w),
-		.en_f(dc_inv),
-		.lock(dc_lock),
-		.stall(dcache_stall),
+		.en_cache(dcmu_en_cache),
+		.addr_rw(dcmu_addr_rw),
+		.addr_type(dcmu_addr_type),
+		.sign_ext(dcmu_sign_ext),
+		.en_r(dcmu_en_r),
+		.data_r(dcmu_data_r),
+		.en_w(dcmu_en_w),
+		.data_w(dcmu_data_w),
+		.en_f(dcmu_en_f),
+		.lock(dcmu_lock),
+		.stall(dcmu_stall),
 		.unalign(mem_unalign),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),
@@ -284,19 +335,21 @@ module wb_mips (
 		.wbm_ack_i(dcmu_ack_i)
 		);*/
 	
-	wb_cpu_conn DCMU (
+	wb_cpu_conn #(
+		.STALL_HALF_DELAY(0)
+		) DCMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
 		.suspend(exception | mem_page_fault | mem_unauth_user | mem_unauth_write),
-		.addr_rw({mem_addr_physical, mem_addr_page}),
-		.addr_type(mem_type),
-		.sign_ext(mem_ext),
-		.en_r(mem_ren),
-		.data_r(mem_data_r),
-		.en_w(mem_wen),
-		.data_w(mem_data_w),
-		.lock(dc_lock),
-		.stall(dcache_stall),
+		.addr_rw(dcmu_addr_rw),
+		.addr_type(dcmu_addr_type),
+		.sign_ext(dcmu_sign_ext),
+		.en_r(dcmu_en_r),
+		.data_r(dcmu_data_r),
+		.en_w(dcmu_en_w),
+		.data_w(dcmu_data_w),
+		.lock(dcmu_lock),
+		.stall(dcmu_stall),
 		.unalign(mem_unalign),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),
@@ -310,7 +363,5 @@ module wb_mips (
 		.wbm_data_o(dcmu_data_o),
 		.wbm_ack_i(dcmu_ack_i)
 		);
-	
-	// TODO
 	
 endmodule

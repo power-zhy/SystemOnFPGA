@@ -1,29 +1,6 @@
 `timescale 1ns / 1ps
 
-////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer:
-//
-// Create Date:   10:37:14 09/20/2014
-// Design Name:   wb_arb
-// Module Name:   D:/Verilog/SystemOnFPGA/sim_wb_arb.v
-// Project Name:  SystemOnFPGA
-// Target Device:  
-// Tool versions:  
-// Description: 
-//
-// Verilog Test Fixture created by ISE for module: wb_arb
-//
-// Dependencies:
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-////////////////////////////////////////////////////////////////////////////////
-
 module sim_wb_arb;
-
 	// Inputs
 	reg wb_clk;
 	reg wb_rst;
@@ -65,7 +42,7 @@ module sim_wb_arb;
 	reg s1_ack_i;
 	reg [31:0] s2_data_i;
 	reg s2_ack_i;
-
+	
 	// Outputs
 	wire invalid_addr;
 	wire [31:0] m0_data_o;
@@ -100,7 +77,7 @@ module sim_wb_arb;
 	wire [3:0] s2_sel_o;
 	wire s2_we_o;
 	wire [31:0] s2_data_o;
-
+	
 	// Instantiate the Unit Under Test (UUT)
 	wb_arb uut (
 		.wb_clk(wb_clk), 
@@ -177,7 +154,7 @@ module sim_wb_arb;
 		.s2_data_o(s2_data_o), 
 		.s2_ack_i(s2_ack_i)
 	);
-
+	
 	initial begin
 		// Initialize Inputs
 		wb_clk = 0;
@@ -220,12 +197,8 @@ module sim_wb_arb;
 		s1_ack_i = 0;
 		s2_data_i = 0;
 		s2_ack_i = 0;
-
-		// Wait 100 ns for global reset to finish
-		#100;
-        
-		// Add stimulus here
-		#11;  // make sure all data change below occurs after the posedge of clock
+		
+		#111;  // make sure all data change below occurs after the posedge of clock
 		#100 m0_cyc_i = 1;
 		#100 m1_cyc_i = 1;
 		#100 m2_cyc_i = 1;
@@ -234,9 +207,8 @@ module sim_wb_arb;
 		#100 m1_cyc_i = 1;
 		#100 m2_cyc_i = 0;
 		#100 m1_cyc_i = 0;
-
 	end
+	
 	initial forever #10 wb_clk = ~wb_clk;
-
+	
 endmodule
-

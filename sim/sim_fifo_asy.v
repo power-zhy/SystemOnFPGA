@@ -1,29 +1,6 @@
 `timescale 1ns / 1ps
 
-////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer:
-//
-// Create Date:   17:33:52 09/22/2014
-// Design Name:   fifo_asy
-// Module Name:   D:/Verilog/SystemOnFPGA/sim_fifo_asy.v
-// Project Name:  SystemOnFPGA
-// Target Device:  
-// Tool versions:  
-// Description: 
-//
-// Verilog Test Fixture created by ISE for module: fifo_asy
-//
-// Dependencies:
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-////////////////////////////////////////////////////////////////////////////////
-
 module sim_fifo_asy;
-
 	// Inputs
 	reg rst;
 	reg clk_w;
@@ -31,7 +8,7 @@ module sim_fifo_asy;
 	reg [31:0] data_w;
 	reg clk_r;
 	reg en_r;
-
+	
 	// Outputs
 	wire full_w;
 	wire near_full_w;
@@ -40,7 +17,7 @@ module sim_fifo_asy;
 	wire empty_r;
 	wire near_empty_r;
 	wire [7:0] data_count;
-
+	
 	// Instantiate the Unit Under Test (UUT)
 	fifo_asy uut (
 		.rst(rst), 
@@ -57,7 +34,7 @@ module sim_fifo_asy;
 		.near_empty_r(near_empty_r), 
 		.data_count(data_count)
 	);
-
+	
 	initial begin
 		// Initialize Inputs
 		rst = 0;
@@ -66,12 +43,6 @@ module sim_fifo_asy;
 		data_w = 0;
 		clk_r = 0;
 		en_r = 0;
-
-		// Wait 100 ns for global reset to finish
-		#100;
-        
-		// Add stimulus here
-
 	end
 	
 	initial forever #10 clk_w = ~clk_w;
@@ -112,5 +83,5 @@ module sim_fifo_asy;
 		#100 en_r = 0;
 		#100 en_r = 0;
 	end
-
+	
 endmodule

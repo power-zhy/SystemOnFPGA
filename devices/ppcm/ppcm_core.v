@@ -43,23 +43,21 @@ module ppcm_core (
 	end
 	
 	localparam
-		S_INIT = 0,
-		S_IDLE = 1,
-		S_WAIT = 2,
-		S_OP1 = 3,
-		S_OP2 = 4,
-		S_DONE = 5;
+		S_INIT = 0,  // wait for the initialization of PPCM
+		S_IDLE = 1,  // idle
+		S_WAIT = 2,  // wait for data
+		S_OP1 = 3,  // read low 16-bits data
+		S_OP2 = 4,  // read high 16-bits data
+		S_DONE = 5;  // acknowledge
 	
 	reg [2:0] state = 0;
 	reg [2:0] next_state;
 	reg [COUNT_BITS-1:0] count = 0;
 	reg [COUNT_BITS-1:0] next_count;
-	reg latch;
 	
 	always @(*) begin
 		next_state = 0;
 		next_count = 0;
-		latch = 0;
 		case (state)
 			S_INIT: begin
 				if (count == COUNT_INIT-1) begin
@@ -91,7 +89,6 @@ module ppcm_core (
 			end
 			S_OP1: begin
 				if (count == COUNT_DATA-1) begin
-					latch = 1;
 					next_state = S_OP2;
 					next_count = 0;
 				end
@@ -102,7 +99,6 @@ module ppcm_core (
 			end
 			S_OP2: begin
 				if (count == COUNT_DATA-1) begin
-					latch = 1;
 					if (cs && burst && (pcm_addr[3:1] != 3'b111))
 						next_state = S_OP1;
 					else
@@ -138,8 +134,6 @@ module ppcm_core (
 		pcm_addr <= 0;
 		pcm_dout <= 0;
 		busy <= 0;
-		dout <= 0;
-		ack <= 0;
 		if (~rst) case (next_state)
 			S_INIT: begin
 				busy <= 1;
@@ -154,20 +148,22 @@ module ppcm_core (
 				busy <= 1;
 				pcm_ce_n <= 0;
 				pcm_oe_n <= 0;
-				if (latch) begin
+				if (count == COUNT_DATA-1)
 					pcm_addr <= pcm_addr + 1'h1;
-					dout <= {pcm_din, dout[31:16]};
-				end
-				else begin
-					pcm_addr <= pcm_addr;
-					dout <= dout;
-				end
-			end
-			S_DONE: begin
-				if (latch)
-					dout <= {pcm_din, dout[31:16]};
 				else
-					dout <= dout;
+					pcm_addr <= pcm_addr;
+			end
+		endcase
+	end
+	
+	always @(posedge clk) begin
+		ack <= 0;
+		if (~rst) case (state)
+			S_OP1: if (count == COUNT_DATA-1) begin
+				dout <= {16'b0, pcm_din};
+			end
+			S_OP2: if (count == COUNT_DATA-1) begin
+				dout <= {pcm_din, dout[15:0]};
 				ack <= 1;
 			end
 		endcase

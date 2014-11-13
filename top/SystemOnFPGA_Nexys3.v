@@ -253,9 +253,9 @@ module SystemOnFPGA_Nexys3 (
 	
 	ir_conv #(
 		.INTERRUPT_NUMBER(30),
-		.INTERRUPT_DELAY(CLK_FREQ_SYS / CLK_FREQ_CPU)
+		.INTERRUPT_DELAY(CLK_FREQ_DEV / CLK_FREQ_CPU)
 		) IR_CONV (
-		.clk(clk_sys),
+		.clk(clk_dev),
 		.rst(1'b0),
 		.ir_i(ir_orig),
 		.ir_o(ir_map)

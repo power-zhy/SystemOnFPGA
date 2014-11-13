@@ -401,6 +401,14 @@ module uart_rx (
 		end
 	end
 	
+	reg rx_prev;
+	always @(posedge clk) begin
+		if (rst)
+			rx_prev <= 0;
+		else
+			rx_prev <= rx;
+	end
+	
 	localparam
 		S_IDLE = 0,  // idle
 		S_START = 1,  // receive and check start bit
@@ -413,7 +421,7 @@ module uart_rx (
 		next_state = S_IDLE;
 		case (state)
 			S_IDLE: begin
-				if (en && ~rx)
+				if (en && rx_prev && ~rx)
 					next_state = S_START;
 				else
 					next_state = S_IDLE;

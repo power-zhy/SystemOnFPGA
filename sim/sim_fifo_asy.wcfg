@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="19" />
+   <WVObjectSize size="17" />
    <wvobject fp_name="/sim_fifo_asy/full_w" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">full_w</obj_property>
       <obj_property name="ObjectShortName">full_w</obj_property>
@@ -71,34 +71,24 @@
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="CustomSignalColor">#ff00ff</obj_property>
    </wvobject>
-   <wvobject fp_name="/sim_fifo_asy/uut/read_buf" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">read_buf[31:0]</obj_property>
-      <obj_property name="ObjectShortName">read_buf[31:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_fifo_asy/uut/write_buf" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">write_buf[31:0]</obj_property>
-      <obj_property name="ObjectShortName">write_buf[31:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_fifo_asy/uut/write_buf2" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">write_buf2[31:0]</obj_property>
-      <obj_property name="ObjectShortName">write_buf2[31:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_fifo_asy/uut/read_src" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">read_src[1:0]</obj_property>
-      <obj_property name="ObjectShortName">read_src[1:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
    <wvobject fp_name="/sim_fifo_asy/uut/ptr_w" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">ptr_w[7:0]</obj_property>
       <obj_property name="ObjectShortName">ptr_w[7:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
+   <wvobject fp_name="/sim_fifo_asy/uut/ptr_w_next" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ptr_w_next[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ptr_w_next[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
    <wvobject fp_name="/sim_fifo_asy/uut/ptr_r" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">ptr_r[7:0]</obj_property>
       <obj_property name="ObjectShortName">ptr_r[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo_asy/uut/ptr_r_next" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ptr_r_next[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ptr_r_next[7:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
 </wave_config>

@@ -22,7 +22,7 @@ module mmu (
 	// data fetch interfaces (for page information)
 	output wire ren,  // read enable signal
 	output wire [31:0] addr,  // address of data
-	input wire ack,  // data acknowledgement
+	input wire ack,  // acknowledgement
 	input wire [31:0] data  // data content
 	);
 	

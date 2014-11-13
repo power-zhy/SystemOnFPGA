@@ -236,14 +236,14 @@ module wb_uart (
 	end
 	
 	// interrupt
-	reg tx_empty_prev;
+	reg tx_empty_prev = 1;
 	reg [7:0] rx_left_prev;
 	reg [TIMEOUT_WIDTH-1:0] clk_count;
 	wire ir_tx_empty, ir_rx_full, ir_error, ir_timeout, ir_tx_of, ir_rx_of, ir_rx_uf;
 	
 	always @(posedge clk) begin
 		if (rst) begin
-			tx_empty_prev <= 0;
+			tx_empty_prev <= 1;
 			rx_left_prev <= 0;
 		end
 		else begin

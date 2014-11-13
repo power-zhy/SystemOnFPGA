@@ -206,6 +206,7 @@ module psram_core (
 				ram_dout <= din[15:0];
 				ram_lb_n <= we ? ~sel[0] : 1'b0;
 				ram_ub_n <= we ? ~sel[1] : 1'b0;
+				ack <= we;  // acknowledge must be uttered earlier than normal as we need one clock to fetch next data
 			end
 			S_OP2: begin
 				busy <= 1;
@@ -215,7 +216,7 @@ module psram_core (
 				ram_dout <= din[31:16];
 				ram_lb_n <= we ? ~sel[2] : 1'b0;
 				ram_ub_n <= we ? ~sel[3] : 1'b0;
-				ack <= 1;
+				ack <= ~we;
 			end
 			S_DONE: begin
 			end

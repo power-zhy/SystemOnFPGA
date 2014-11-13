@@ -19,7 +19,7 @@ module wb_cmu (
 	input wire [31:0] data_w,  // data write in
 	input wire en_f,  // flush enable signal
 	input wire lock,  // keep current data to avoid process repeating
-	output reg stall,  // stall other component when CMU is busy
+	output wire stall,  // stall other component when CMU is busy
 	output reg unalign,  // address unaligned error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
@@ -40,6 +40,8 @@ module wb_cmu (
 	parameter
 		TAG_BITS = 22,  // tag length
 		LINE_WORDS = 4;  // number of words per-line
+	parameter
+		STALL_HALF_DELAY = 1;  // delay the stall signal half clock to prevent close logic loop
 	localparam
 		LINE_WORDS_WIDTH = GET_WIDTH(LINE_WORDS-1),  // 2
 		LINE_INDEX_WIDTH = 32 - TAG_BITS - LINE_WORDS_WIDTH - 2,  // 6
@@ -168,7 +170,7 @@ module wb_cmu (
 	always @(*) begin
 		next_state = S_IDLE;
 		next_word_count = 0;
-		if (~rst && ~suspend) case (state)
+		if (~suspend) case (state)
 			S_IDLE: begin
 				if (en_f) begin
 					if (need_flush)
@@ -245,7 +247,7 @@ module wb_cmu (
 		endcase
 	end
 	
-	always @(posedge clk) begin
+	always @(posedge wbm_clk_i) begin
 		if (rst || suspend) begin
 			state <= 0;
 			word_count <= 0;
@@ -263,10 +265,10 @@ module wb_cmu (
 		cache_invalid = 0;
 		cache_addr = 0;
 		cache_din = 0;
-		if (~rst && ~suspend) case (next_state)
+		if (~suspend) case (next_state)
 			S_IDLE: begin
 				cache_addr = addr_rw;
-				cache_edit = en_w;
+				cache_edit = en_w ? sel_align : 4'b0;
 				cache_din = data_w;
 			end
 			S_BACK, S_BACK_WAIT: begin
@@ -348,7 +350,7 @@ module wb_cmu (
 				wbm_data_o <= data_align_w;
 			end
 			S_UNCACHE_LOCK: begin
-				if (wbm_ack_i)
+				if (wbm_cyc_o && wbm_ack_i)
 					uncache_buf <= wbm_data_i;
 			end
 			S_INVALID: begin
@@ -371,40 +373,34 @@ module wb_cmu (
 	end
 	
 	// outputs
-	always @(*) begin  // these signals can not use clock because data must be returned immediately when cache hit
-		stall = 0;
+	always @(*) begin
 		data_align_r = 0;
-		if (~rst && ~suspend) case (next_state)
-			S_IDLE: begin
-				stall = 0;
-				if (state == S_UNCACHE_LOCK)
-					data_align_r = uncache_buf;
-				else
-					data_align_r = cache_dout;
-			end
-			S_BACK: begin
-				stall = 1;
-			end
-			S_UNCACHE: begin
-				stall = 1;
-			end
-			S_UNCACHE_LOCK: begin
-				if (wbm_ack_i) begin
-					stall = 1;
-					data_align_r = wbm_data_i;
-				end
-				else begin
-					stall = 0;
-					data_align_r = uncache_buf;
-				end
-			end
-			S_INVALID: begin
-				stall = 1;
-			end
-			default: begin
-				stall = 1;
-			end
+		if (~suspend) case (state)
+			S_IDLE: data_align_r = cache_dout;
+			S_UNCACHE_LOCK: data_align_r = uncache_buf;
 		endcase
 	end
+	
+	// stall
+	reg stall_inner, stall_delay;
+	
+	always @(*) begin
+		stall_inner = 0;
+		if (~suspend) case (next_state)
+			S_IDLE: stall_inner = 0;
+			S_UNCACHE_LOCK: stall_inner = wbm_cyc_o & wbm_ack_i;
+			default: stall_inner = 1;
+		endcase
+	end
+	
+	always @(negedge clk) begin
+		if (rst || suspend)
+			stall_delay <= 0;
+		else
+			stall_delay <= stall_inner;
+	end
+	
+	assign
+		stall = STALL_HALF_DELAY ? stall_delay : stall_inner;
 	
 endmodule

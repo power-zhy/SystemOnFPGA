@@ -205,12 +205,12 @@ module wb_spi (
 	end
 	
 	// interrupt
-	reg tx_empty_prev;
+	reg tx_empty_prev = 1;
 	wire ir_overflow, ir_underflow, ir_empty;
 	
 	always @(posedge clk) begin
 		if (rst) begin
-			tx_empty_prev <= 0;
+			tx_empty_prev <= 1;
 		end
 		else begin
 			tx_empty_prev <= tx_empty;
