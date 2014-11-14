@@ -44,10 +44,19 @@ module wb_mips (
 	output wire wd_rst  // watch dog reset, must not affect the global reset signal
 	);
 	
+	//`define NO_MMU
+	`define NO_IC
+	`define NO_DC
+	
 	`include "cpu_define.vh"
 	parameter
 		CLK_FREQ = 100;  // main clock frequency in MHz
 	parameter
+		IT_LINE_NUM = 16,  // number of lines in instruction TLB, must be the power of 2
+		DT_LINE_NUM = 16,  // number of lines in data TLB, must be the power of 2
+		IC_LINE_NUM = 64,  // number of lines in instruction cache, must be the power of 2
+		DC_LINE_NUM = 64;  // number of lines in data cache, must be the power of 2
+	localparam
 		PAGE_ADDR_BITS = 12;  // address length inside one memory page
 	
 	// MMU signals
@@ -94,7 +103,7 @@ module wb_mips (
 	// mips core
 	assign
 		inst_stall = immu_stall | icache_stall,
-		mem_stall = dmmu_stall | dcache_stall;
+		mem_stall = immu_stall | dmmu_stall | dcache_stall;
 	
 	mips_core #(
 		.CLK_FREQ(CLK_FREQ),
@@ -143,10 +152,11 @@ module wb_mips (
 	`ifndef NO_MMU
 	// instruction MMU
 	mmu #(
-		.PAGE_ADDR_BITS(PAGE_ADDR_BITS)
+		.LINE_NUM(IT_LINE_NUM)
 		) IMMU (
 		.clk(clk),
 		.rst(rst | wd_rst | mmu_inv),
+		.suspend(exception),
 		.en_mmu(mmu_en & inst_ren),
 		.stall(immu_stall),
 		.pdb_addr(pdb_addr),
@@ -169,10 +179,11 @@ module wb_mips (
 	
 	// data MMU
 	mmu #(
-		.PAGE_ADDR_BITS(PAGE_ADDR_BITS)
+		.LINE_NUM(DT_LINE_NUM)
 		) DMMU (
 		.clk(clk),
 		.rst(rst | wd_rst | mmu_inv),
+		.suspend(exception),
 		.en_mmu(mmu_en & (mem_ren | mem_wen)),
 		.stall(dmmu_stall),
 		.pdb_addr(pdb_addr),
@@ -220,7 +231,7 @@ module wb_mips (
 	`ifndef NO_IC
 	// instruction cache
 	wb_cmu #(
-		.TAG_BITS(22),
+		.LINE_NUM(IC_LINE_NUM),
 		.LINE_WORDS(4)
 		) ICMU (
 		.clk(clk),
@@ -289,7 +300,6 @@ module wb_mips (
 	reg [31:0] dcmu_data_w;
 	reg dcmu_en_f;
 	reg dcmu_lock;
-	wire dcmu_stall;
 	
 	always @(*) begin
 		dcmu_en_cache = 0;
@@ -311,7 +321,7 @@ module wb_mips (
 			dcmu_addr_rw = itlb_addr;
 			dcmu_addr_type = MEM_TYPE_WORD;
 			dcmu_en_r = 1;
-			itlb_ack = ~dcmu_stall;
+			itlb_ack = ~dcache_stall;
 			itlb_data = dcmu_data_r;
 		end
 		else if (dtlb_ren) begin
@@ -319,7 +329,7 @@ module wb_mips (
 			dcmu_addr_rw = dtlb_addr;
 			dcmu_addr_type = MEM_TYPE_WORD;
 			dcmu_en_r = 1;
-			dtlb_ack = ~dcmu_stall;
+			dtlb_ack = ~dcache_stall;
 			dtlb_data = dcmu_data_r;
 		end
 		else begin
@@ -336,12 +346,10 @@ module wb_mips (
 		end
 	end
 	
-	assign dcache_stall = dcmu_stall;
-	
 	`ifndef NO_DC
 	// data cache
 	wb_cmu #(
-		.TAG_BITS(22),
+		.LINE_NUM(DC_LINE_NUM),
 		.LINE_WORDS(4)
 		) DCMU (
 		.clk(clk),
@@ -357,7 +365,7 @@ module wb_mips (
 		.data_w(dcmu_data_w),
 		.en_f(dcmu_en_f),
 		.lock(dcmu_lock),
-		.stall(dcmu_stall),
+		.stall(dcache_stall),
 		.unalign(mem_unalign),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),
@@ -384,7 +392,7 @@ module wb_mips (
 		.en_w(dcmu_en_w),
 		.data_w(dcmu_data_w),
 		.lock(dcmu_lock),
-		.stall(dcmu_stall),
+		.stall(dcache_stall),
 		.unalign(mem_unalign),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),

@@ -24,15 +24,15 @@ module cache (
 	`include "function.vh"
 	parameter
 		ADDR_BITS = 32,  // address length
-		TAG_BITS = 22,  // tag length
 		WORD_BYTES = 4,  // number of bytes per-word
-		LINE_WORDS = 4;  // number of words per-line
+		LINE_WORDS = 4,  // number of words per-line
+		LINE_NUM = 64;  // number of lines in cache, must be the power of 2
 	localparam
 		WORD_BITS = 8 * WORD_BYTES,  // 32
 		LINE_WORDS_WIDTH = GET_WIDTH(LINE_WORDS-1),  // 2
 		WORD_BYTES_WIDTH = GET_WIDTH(WORD_BYTES-1),  // 2
-		LINE_INDEX_WIDTH = ADDR_BITS - TAG_BITS - LINE_WORDS_WIDTH - WORD_BYTES_WIDTH,  // 6
-		LINE_NUM = 1 << LINE_INDEX_WIDTH;  // 64
+		LINE_INDEX_WIDTH = GET_WIDTH(LINE_NUM-1),  // 6
+		TAG_BITS = ADDR_BITS - LINE_INDEX_WIDTH - LINE_WORDS_WIDTH - WORD_BYTES_WIDTH;  // 22
 	
 	reg [LINE_NUM-1:0] inner_valid = 0;
 	reg [LINE_NUM-1:0] inner_dirty = 0;

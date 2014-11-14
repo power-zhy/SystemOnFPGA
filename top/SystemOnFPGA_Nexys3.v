@@ -371,7 +371,10 @@ module SystemOnFPGA_Nexys3 (
 	// CPU
 	wb_mips #(
 		.CLK_FREQ(CLK_FREQ_CPU),
-		.PAGE_ADDR_BITS(12)
+		.IT_LINE_NUM(16),
+		.DT_LINE_NUM(16),
+		.IC_LINE_NUM(64),
+		.DC_LINE_NUM(64)
 		) WB_MIPS (
 		.clk(clk_cpu),
 		.rst(rst_all),

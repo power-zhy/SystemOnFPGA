@@ -167,11 +167,11 @@ endmodule
 
 
 module bit_searcher (
-	input wire [N-1:0] bits,
-	input wire target,
-	input wire direction,  // 0 for lower to upper, 1 otherwise
-	output wire hit,
-	output wire [W-1:0] index
+	input wire [N-1:0] bits,  // data being searched
+	input wire target,  // search target
+	input wire direction,  // search direction, 0 for lower to upper and 1 otherwise
+	output wire hit,  // target found flag
+	output wire [W-1:0] index  // index of target in data
 	);
 	
 	`include "function.vh"

@@ -19,7 +19,7 @@ module wb_cmu (
 	input wire [31:0] data_w,  // data write in
 	input wire en_f,  // flush enable signal
 	input wire lock,  // keep current data to avoid process repeating
-	output reg stall,  // stall other component when CMU is busy
+	output reg stall,  // stall other components when CMU is busy
 	output reg unalign,  // address unaligned error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
@@ -38,12 +38,12 @@ module wb_cmu (
 	`include "function.vh"
 	`include "cpu_define.vh"
 	parameter
-		TAG_BITS = 22,  // tag length
+		LINE_NUM = 64,  // number of lines in cache, must be the power of 2
 		LINE_WORDS = 4;  // number of words per-line
 	localparam
 		LINE_WORDS_WIDTH = GET_WIDTH(LINE_WORDS-1),  // 2
-		LINE_INDEX_WIDTH = 32 - TAG_BITS - LINE_WORDS_WIDTH - 2,  // 6
-		LINE_NUM = 1 << LINE_INDEX_WIDTH;  // 64
+		LINE_INDEX_WIDTH = GET_WIDTH(LINE_NUM-1),  // 6
+		TAG_BITS = 32 - LINE_INDEX_WIDTH - LINE_WORDS_WIDTH - 2;  // 22
 	
 	// delay lock signal half a clock to prevent close logic loop
 	reg lock_delay;
