@@ -184,7 +184,7 @@ module wb_mips (
 		.clk(clk),
 		.rst(rst | wd_rst | mmu_inv),
 		.suspend(exception),
-		.en_mmu(mmu_en & (mem_ren | mem_wen)),
+		.en_mmu(mmu_en & (mem_ren | mem_wen | dc_inv)),
 		.stall(dmmu_stall),
 		.pdb_addr(pdb_addr),
 		.logical(mem_addr_logical),
@@ -236,7 +236,7 @@ module wb_mips (
 		) ICMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
-		.suspend(exception | inst_page_fault | inst_unauth_user | inst_unauth_exec),
+		.suspend(exception | immu_stall | inst_page_fault | inst_unauth_user | inst_unauth_exec),
 		.en_cache(ic_en),
 		.addr_rw({inst_addr_physical, inst_addr_page}),
 		.addr_type(MEM_TYPE_WORD),
@@ -265,7 +265,7 @@ module wb_mips (
 	wb_cpu_conn ICMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
-		.suspend(exception | inst_page_fault | inst_unauth_user | inst_unauth_exec),
+		.suspend(exception | immu_stall | inst_page_fault | inst_unauth_user | inst_unauth_exec),
 		.addr_rw({inst_addr_physical, inst_addr_page}),
 		.addr_type(MEM_TYPE_WORD),
 		.sign_ext(1'b0),
@@ -316,20 +316,20 @@ module wb_mips (
 		dtlb_ack = 0;
 		dtlb_data = 0;
 		mem_data_r = 0;
-		if (itlb_ren) begin
+		if (immu_stall) begin
 			dcmu_en_cache = 1;
 			dcmu_addr_rw = itlb_addr;
 			dcmu_addr_type = MEM_TYPE_WORD;
-			dcmu_en_r = 1;
-			itlb_ack = ~dcache_stall;
+			dcmu_en_r = itlb_ren;
+			itlb_ack = itlb_ren & ~dcache_stall;
 			itlb_data = dcmu_data_r;
 		end
-		else if (dtlb_ren) begin
+		else if (dmmu_stall) begin
 			dcmu_en_cache = 1;
 			dcmu_addr_rw = dtlb_addr;
 			dcmu_addr_type = MEM_TYPE_WORD;
-			dcmu_en_r = 1;
-			dtlb_ack = ~dcache_stall;
+			dcmu_en_r = dtlb_ren;
+			dtlb_ack = dtlb_ren & ~dcache_stall;
 			dtlb_data = dcmu_data_r;
 		end
 		else begin
@@ -354,7 +354,7 @@ module wb_mips (
 		) DCMU (
 		.clk(clk),
 		.rst(rst | wd_rst),
-		.suspend(exception | mem_page_fault | mem_unauth_user | mem_unauth_write),
+		.suspend(exception | dmmu_stall | mem_page_fault | mem_unauth_user | mem_unauth_write),
 		.en_cache(dcmu_en_cache),
 		.addr_rw(dcmu_addr_rw),
 		.addr_type(dcmu_addr_type),

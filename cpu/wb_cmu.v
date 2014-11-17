@@ -8,7 +8,7 @@
 module wb_cmu (
 	input wire clk,  // main clock, should be exactly the same as wishbone clock in current version
 	input wire rst,  // synchronous reset
-	input wire suspend,  // force suspend current process (i.e. exception occurred)
+	input wire suspend,  // force suspend current process
 	input wire en_cache,  // whether using cache or access memory directly
 	input wire [31:0] addr_rw,  // address for data read or write
 	input wire [1:0] addr_type,  // memory access type (word, half, byte)
