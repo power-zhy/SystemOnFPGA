@@ -67,9 +67,9 @@ module wb_cmu (
 	
 	cache #(
 		.ADDR_BITS(32),
-		.TAG_BITS(TAG_BITS),
 		.WORD_BYTES(4),
-		.LINE_WORDS(LINE_WORDS)
+		.LINE_WORDS(LINE_WORDS),
+		.LINE_NUM(LINE_NUM)
 		) CACHE (
 		.clk(clk),
 		.rst(rst),
@@ -106,7 +106,7 @@ module wb_cmu (
 		data_r = 0;
 		data_align_w = 0;
 		unalign = 0;
-		if (~rst && (en_r | en_w)) case (addr_type[1:0])
+		if (en_r || en_w) case (addr_type[1:0])
 			MEM_TYPE_WORD: case (addr_rw[1:0])
 				2'b00: begin
 					sel_align = 4'b1111;

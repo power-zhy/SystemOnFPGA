@@ -52,14 +52,14 @@ module SystemOnFPGA_Nexys3 (
 	
 	// defines
 	// uncomment below lines when corresponding devices are not used
-	`define NO_MEMORY
-	`define NO_DEVICE
+	//`define NO_MEMORY
+	//`define NO_DEVICE
 	//`define NO_VGA
 	//`define NO_BOARD
 	//`define NO_KEYBOARD
 	//`define NO_SPI
 	//`define NO_UART
-	`define SIMULATING
+	//`define SIMULATING
 	
 	// clock & reset
 	wire clk_100m, clk_50m, clk_25m, clk_10m;

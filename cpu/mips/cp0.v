@@ -306,22 +306,22 @@ module cp0 (
 		end
 		else
 		`endif
-		// exception only occurs when new instruction goes into MEM stage.
-		// cancel all instructions in the pipeline except WB stage.
-		// do not reset IF stage, as it needs to load the exception target
-		if (exception) begin
-			id_rst = 1;
-			exe_rst = 1;
-			mem_rst = 1;
-			wb_en = 0;
-			ir_en_pending = 0;
-		end
 		// these two stalls indicate that MMU/CACHE is fetching data, freeze the whole pipeline.
-		else if (inst_stall || mem_stall) begin
+		if (inst_stall || mem_stall) begin
 			if_en = 0;
 			id_en = 0;
 			exe_en = 0;
 			mem_en = 0;
+			wb_en = 0;
+			ir_en_pending = 0;
+		end
+		// exception only occurs when new instruction goes into MEM stage.
+		// cancel all instructions in the pipeline except WB stage.
+		// do not reset IF stage, as it needs to load the exception target
+		else if (exception) begin
+			id_rst = 1;
+			exe_rst = 1;
+			mem_rst = 1;
 			wb_en = 0;
 			ir_en_pending = 0;
 		end
