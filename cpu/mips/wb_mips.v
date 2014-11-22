@@ -60,6 +60,7 @@ module wb_mips (
 		PAGE_ADDR_BITS = 12;  // address length inside one memory page
 	
 	// MMU signals
+	wire user_mode;
 	wire mmu_en, mmu_inv;
 	wire [31:PAGE_ADDR_BITS] pdb_addr;
 	
@@ -119,6 +120,7 @@ module wb_mips (
 		.debug_addr(debug_addr),
 		.debug_data(debug_data),
 		`endif
+		.user_mode(user_mode),
 		.mmu_en(mmu_en),
 		.mmu_inv(mmu_inv),
 		.pdb_addr(pdb_addr),
@@ -159,7 +161,7 @@ module wb_mips (
 		.clk(clk),
 		.rst(rst | wd_rst | mmu_inv),
 		.suspend(1'b0),
-		.en_mmu(mmu_en & inst_ren),
+		.en_mmu(mmu_en & (inst_ren | ic_inv)),
 		.stall(immu_stall),
 		.pdb_addr(pdb_addr),
 		.logical(inst_addr_logical),
@@ -176,7 +178,7 @@ module wb_mips (
 		);
 	
 	assign
-		inst_unauth_user = inst_ren & ~inst_auth_user,
+		inst_unauth_user = inst_ren & ~inst_auth_user & user_mode,
 		inst_unauth_exec = inst_ren & ~inst_auth_exec;
 	
 	// data MMU
@@ -203,8 +205,8 @@ module wb_mips (
 		);
 	
 	assign
-		mem_unauth_user = (mem_ren | mem_wen) & ~mem_auth_user,
-		mem_unauth_write = (mem_ren | mem_wen) & ~mem_auth_write;
+		mem_unauth_user = (mem_ren | mem_wen) & ~mem_auth_user & user_mode,
+		mem_unauth_write = mem_wen & ~mem_auth_write;
 	
 	`else
 	assign

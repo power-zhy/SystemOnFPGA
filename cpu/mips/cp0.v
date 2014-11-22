@@ -445,7 +445,7 @@ module cp0 (
 	
 	always @(posedge clk) begin
 		ir_timer <= 0;
-		if (rst || tir == 0) begin
+		if (rst || wd_rst || (oper == EXE_CP_STORE && addr_w == CP0_TIR) || tir == 0) begin
 			tir_clk_count <= 0;
 			tir_ms_count <= 0;
 		end

@@ -52,9 +52,6 @@ module mmu (
 		.data_w(tlb_data_w)
 		);
 	
-	reg [24:0] tlb_data;
-	reg [4:0] prop_buf;
-	
 	localparam
 		S_IDLE = 0,  // idle
 		S_OP1 = 1,  // fetch the page directory entry
@@ -70,10 +67,6 @@ module mmu (
 			S_IDLE: begin
 				if (en_mmu) begin
 					if (tlb_hit_r) begin
-						stall = 0;
-						next_state = S_IDLE;
-					end
-					else if (~prop_buf[0]) begin
 						stall = 0;
 						next_state = S_IDLE;
 					end
@@ -116,6 +109,16 @@ module mmu (
 			state <= next_state;
 	end
 	
+	reg [4:0] attr_buf;
+	always @(posedge clk) begin
+		if (rst || suspend)
+			attr_buf <= 5'b01111;
+		else case (state)
+			S_IDLE: attr_buf <= 5'b01111;
+			S_OP1: attr_buf <= data[4:0];
+		endcase
+	end
+	
 	// memory control
 	always @(posedge clk) begin
 		if (rst || suspend) begin
@@ -148,33 +151,20 @@ module mmu (
 		tlb_addr_w = 0;
 		tlb_data_w = 0;
 		if (~suspend) case (state)
-			S_OP2: begin
-				tlb_en_w = ack;
+			S_OP1: if (ack && ~data[0]) begin
+				tlb_en_w = 1;
 				tlb_addr_w = logical;
-				tlb_data_w = {data[31:12], data[4:0] & prop_buf};
+				tlb_data_w = data;
+			end
+			S_OP2: if (ack) begin
+				tlb_en_w = 1;
+				tlb_addr_w = logical;
+				tlb_data_w = {data[31:12], data[4:0] & attr_buf};
 			end
 		endcase
 	end
 	
-	always @(posedge clk) begin
-		if (rst || suspend)
-			prop_buf <= 5'b01111;
-		else case (state)
-			S_IDLE: prop_buf <= 5'b01111;
-			S_OP1: prop_buf <= data[4:0];
-		endcase
-	end
-	
 	// outputs
-	always @(*) begin
-		if (tlb_hit_r)
-			tlb_data = tlb_data_r;
-		else if (~prop_buf[0])
-			tlb_data = {20'b0, prop_buf};
-		else
-			tlb_data = 0;
-	end
-	
 	always @(*) begin
 		physical = logical;
 		page_fault = 0;
@@ -183,12 +173,12 @@ module mmu (
 		auth_write = 1;
 		en_cache = 0;
 		if (en_mmu && ~stall) begin
-			physical = tlb_data[24:5];
-			page_fault = ~tlb_data[0];
-			auth_user = tlb_data[1];
-			auth_exec = tlb_data[3];
-			auth_write = tlb_data[2];
-			en_cache = tlb_data[4];
+			physical = tlb_data_r[24:5];
+			page_fault = ~tlb_data_r[0];
+			auth_user = tlb_data_r[1];
+			auth_exec = tlb_data_r[3];
+			auth_write = tlb_data_r[2];
+			en_cache = tlb_data_r[4];
 		end
 	end
 	

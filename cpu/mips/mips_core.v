@@ -16,6 +16,7 @@ module mips_core (
 	output wire [31:0] debug_data,  // debug data
 	`endif
 	// MMU interfaces
+	output wire user_mode,  // whether in user mode now
 	output wire mmu_en,  // MMU enable signal
 	output wire mmu_inv,  // invalidate MMU signal
 	output wire [31:PAGE_ADDR_BITS] pdb_addr,  // base address of page directory table
@@ -116,7 +117,7 @@ module mips_core (
 		.inst(inst_data_ctrl),
 		.data_rs(data_rs_ctrl),
 		.data_rt(data_rt_ctrl),
-		.user_mode(sr[0]),
+		.user_mode(user_mode),
 		.pc_src(pc_src_ctrl),
 		.imm_ext(imm_ext_ctrl),
 		.exe_a_src(exe_a_src_ctrl),
@@ -275,8 +276,9 @@ module mips_core (
 		);
 	
 	assign
-		pdb_addr = pdbr[31:PAGE_ADDR_BITS],
-		mmu_en = pdbr[0];
+		user_mode = sr[0],
+		mmu_en = pdbr[0],
+		pdb_addr = pdbr[31:PAGE_ADDR_BITS];
 	assign
 		ic_lock = ~if_en,
 		dc_lock = ~mem_en;
