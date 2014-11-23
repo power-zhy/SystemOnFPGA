@@ -469,7 +469,7 @@ module cp0 (
 		if (rst || wd_rst)
 			ier <= 0;
 		else if (exception)
-			ier[31] <= eret;
+			ier[31] <= eret;  // disable interrupt when exception occurred, and enable it when exception return
 		else if (oper == EXE_CP_STORE && addr_w == CP0_IER)
 			ier <= data_w;
 	end
@@ -479,7 +479,7 @@ module cp0 (
 		if (rst || wd_rst)
 			icr <= 0;
 		else if (oper == EXE_CP_STORE && addr_w == CP0_ICR)
-			icr <= (icr | {1'b0, ir_map, ir_timer}) & ~data_w;
+			icr <= (icr | {1'b0, ir_map, ir_timer}) & ~data_w;  // avoid read-modify-write problem
 		else
 			icr <= icr | {1'b0, ir_map, ir_timer};
 	end
@@ -510,10 +510,16 @@ module cp0 (
 	
 	always @(posedge clk) begin
 		wd_rst <= 0;
-		if (rst || wdr == 0) begin
+		if (rst || wdr == 0 || inst_addr_mem != inst_addr_prev_mem) begin
 			wdr_clk_count <= 0;
 			wdr_sec_count <= 0;
 		end
+		`ifdef DEBUG
+		else if (debug_en) begin
+			wdr_clk_count <= 0;
+			wdr_sec_count <= 0;
+		end
+		`endif
 		else if (wdr_clk_count != WDR_CLK_DIV-1) begin
 			wdr_clk_count <= wdr_clk_count + 1'h1;
 		end
