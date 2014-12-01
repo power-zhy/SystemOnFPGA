@@ -122,13 +122,6 @@ module wb_vga_text (
 		end
 	end
 	
-	always @(*) begin
-		wbm_we_o <= 0;
-		wbm_sel_o <= 4'b1111;
-		wbm_data_o <= 0;
-		wbm_addr_o[31:16] <= vram_base;
-	end
-	
 	always @(posedge wbm_clk_i) begin
 		if (rst) begin
 			h_en_prev <= 0;
@@ -208,6 +201,13 @@ module wb_vga_text (
 			buf_addr_w <= 0;
 		else if (wbm_cyc_o && wbm_ack_i)
 			buf_addr_w <= buf_addr_w + 1'h1;
+	end
+	
+	always @(*) begin
+		wbm_we_o <= 0;
+		wbm_sel_o <= 4'b1111;
+		wbm_data_o <= 0;
+		wbm_addr_o[31:16] <= vram_base;
 	end
 	
 	always @(posedge wbm_clk_i) begin

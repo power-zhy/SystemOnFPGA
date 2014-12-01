@@ -340,7 +340,7 @@ module cp0 (
 			ir_en_pending = 0;
 		end
 		// as privilege instruction may change many important CPU configurations, make sure the next instruction be fetched after this one complete.
-		// actually, the next one instruction may still be incompatible with the changed configurations.
+		// actually, the next one instruction may still be incompatible with the changed configurations due to the instruction cache's lock signal, but do not matter.
 		// it also make sure that this privilege instruction will not cause exception.
 		else if (is_privilege || is_privilege_exe) begin
 			if_en = 0;

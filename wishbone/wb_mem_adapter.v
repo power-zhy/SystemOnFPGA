@@ -100,7 +100,7 @@ module wb_mem_adapter (
 		S_WRITE = 1,  // write data to memory
 		S_WRITE_WAIT = 2,  // wishbone write request completed, write remaining data from FIFO_W to memory and wait for memory to be idle
 		S_READ = 3,  // read data from memory
-		S_READ_WAIT = 4;  // wishbone read request completed, send last acknowledge and wait for memory to be idle
+		S_READ_WAIT = 4;  // wishbone read request completed, wait for memory to be idle
 	
 	reg [2:0] state = 0;
 	reg [2:0] next_state;

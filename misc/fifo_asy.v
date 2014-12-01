@@ -11,16 +11,16 @@ module fifo_asy (
 	input wire clk_w,  // write clock
 	input wire en_w,  // write enable
 	input wire [DATA_BITS-1:0] data_w,  // data to write
-	output reg full_w,  // full flag
-	output reg near_full_w,  // near full flag (only one space left)
-	output reg [ADDR_BITS-1:0] space_count,  // free space count
+	output reg full_w = 1,  // full flag
+	output reg near_full_w = 1,  // near full flag (only one space left)
+	output reg [ADDR_BITS-1:0] space_count = 0,  // free space count
 	// data reading
 	input wire clk_r,  // read clock
 	input wire en_r,  // read enable
 	output reg [DATA_BITS-1:0] data_r,  // data from read
-	output reg empty_r,  // empty flag
-	output reg near_empty_r,  // near empty flag (only one data left)
-	output reg [ADDR_BITS-1:0] data_count  // available data count
+	output reg empty_r = 1,  // empty flag
+	output reg near_empty_r = 1,  // near empty flag (only one data left)
+	output reg [ADDR_BITS-1:0] data_count = 0  // available data count
 	);
 	
 	parameter

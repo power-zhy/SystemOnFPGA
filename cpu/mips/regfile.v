@@ -25,8 +25,8 @@ module regfile (
 	);
 	
 	parameter
-		ADDR_BITS = 5,
-		DATA_BITS = 32;
+		ADDR_BITS = 5,  // address length
+		DATA_BITS = 32;  // data length
 	
 	reg [DATA_BITS-1:0] regfile [1:(1<<ADDR_BITS)-1];  // $zero is always zero
 	

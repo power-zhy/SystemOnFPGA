@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Verilog/SystemOnFPGA/sim_fifo_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="sim_fifo" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="19" />
+   <wvobject fp_name="/sim_fifo/uut/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/full_w" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">full_w</obj_property>
+      <obj_property name="ObjectShortName">full_w</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/near_full_w" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">near_full_w</obj_property>
+      <obj_property name="ObjectShortName">near_full_w</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/space_count" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">space_count[7:0]</obj_property>
+      <obj_property name="ObjectShortName">space_count[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/empty_r" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">empty_r</obj_property>
+      <obj_property name="ObjectShortName">empty_r</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/near_empty_r" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">near_empty_r</obj_property>
+      <obj_property name="ObjectShortName">near_empty_r</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/data_count" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_count[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data_count[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/en_w" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">en_w</obj_property>
+      <obj_property name="ObjectShortName">en_w</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/data_w" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_w[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_w[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/en_r" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">en_r</obj_property>
+      <obj_property name="ObjectShortName">en_r</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ff00</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/data_r" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_r[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_r[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/ptr_w" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ptr_w[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ptr_w[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/ptr_w_next" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ptr_w_next[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ptr_w_next[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/ptr_r" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ptr_r[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ptr_r[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/ptr_r_next" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ptr_r_next[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ptr_r_next[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/read_buf" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">read_buf[31:0]</obj_property>
+      <obj_property name="ObjectShortName">read_buf[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/write_buf" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">write_buf[31:0]</obj_property>
+      <obj_property name="ObjectShortName">write_buf[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_fifo/uut/read_src" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">read_src</obj_property>
+      <obj_property name="ObjectShortName">read_src</obj_property>
+   </wvobject>
+</wave_config>
