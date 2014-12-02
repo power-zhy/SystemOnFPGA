@@ -86,7 +86,7 @@ module test_vga (
 	
 	assign
 		wb_ack = wb_cyc & wb_stb,
-		wb_data = {24'h072007, wb_addr[9:2]};
+		wb_data = mode[7] ? {wb_addr[17:2], wb_addr[17:2]} : {24'h072007, wb_addr[9:2]};
 	
 	always @(posedge clk_bus) begin
 		if (rst)

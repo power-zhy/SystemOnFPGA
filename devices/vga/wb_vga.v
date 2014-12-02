@@ -38,6 +38,8 @@ module wb_vga (
 	output reg wbs_ack_o
 	);
 	
+	//`define NO_GRAPHIC
+	
 	`include "function.vh"
 	`include "vga_define.vh"
 	parameter
@@ -80,8 +82,9 @@ module wb_vga (
 		.v_en(v_en_core)
 		);
 	
+	wire text_en, graphic_en;
+	
 	// text mode
-	wire text_en;
 	wire h_sync_text;
 	wire v_sync_text;
 	wire r_text, g_text, b_text;
@@ -103,8 +106,8 @@ module wb_vga (
 		.rst(rst | ~text_en),
 		.vga_clk(vga_clk),
 		.h_count_core(h_count_core),
-		.v_count_core(v_count_core),
 		.h_disp_max(h_disp_max),
+		.v_count_core(v_count_core),
 		.v_disp_max(v_disp_max),
 		.h_sync_core(h_sync_core),
 		.v_sync_core(v_sync_core),
@@ -133,6 +136,56 @@ module wb_vga (
 		.wbm_data_o(wbm_data_text),
 		.wbm_ack_i(wbm_ack_i)
 		);
+	
+	// graphic mode
+	`ifndef NO_GRAPHIC
+	wire h_sync_graphic;
+	wire v_sync_graphic;
+	wire [2:0] r_graphic;
+	wire [2:0] g_graphic;
+	wire [1:0] b_graphic;
+	wire wbm_cyc_graphic, wbm_stb_graphic;
+	wire [31:2] wbm_addr_graphic;
+	wire [2:0] wbm_cti_graphic;
+	wire [1:0] wbm_bte_graphic;
+	wire [3:0] wbm_sel_graphic;
+	wire wbm_we_graphic;
+	wire [31:0] wbm_data_graphic;
+	
+	assign
+		graphic_en = (reg_mode[3:0] != 0) & reg_mode[31] & vga_valid;
+	
+	wb_vga_graphic WB_VGA_GRAPHIC (
+		.clk(clk),
+		.rst(rst | ~graphic_en),
+		.vga_clk(vga_clk),
+		.h_count_core(h_count_core),
+		.p_disp_max(p_disp_max),
+		.h_sync_core(h_sync_core),
+		.v_sync_core(v_sync_core),
+		.h_en_core(h_en_core),
+		.v_en_core(v_en_core),
+		.vram_base(reg_vram_base[31:20]),
+		.h_sync(h_sync_graphic),
+		.v_sync(v_sync_graphic),
+		.r(r_graphic),
+		.g(g_graphic),
+		.b(b_graphic),
+		.wbm_clk_i(wbm_clk_i),
+		.wbm_cyc_o(wbm_cyc_graphic),
+		.wbm_stb_o(wbm_stb_graphic),
+		.wbm_addr_o(wbm_addr_graphic),
+		.wbm_cti_o(wbm_cti_graphic),
+		.wbm_bte_o(wbm_bte_graphic),
+		.wbm_sel_o(wbm_sel_graphic),
+		.wbm_we_o(wbm_we_graphic),
+		.wbm_data_i(wbm_data_i),
+		.wbm_data_o(wbm_data_graphic),
+		.wbm_ack_i(wbm_ack_i)
+		);
+	`else
+	assign graphic_en = 0;
+	`endif
 	
 	// wishbone controller
 	always @(posedge wbs_clk_i) begin
@@ -208,12 +261,16 @@ module wb_vga (
 		end
 	end
 	
-	reg text_en_buf;  // using buffer to separate clock domains
+	reg text_en_buf, graphic_en_buf;  // using buffer to separate clock domains
 	always @(posedge wbs_clk_i) begin
-		if (rst)
+		if (rst) begin
 			text_en_buf <= 0;
-		else
+			graphic_en_buf <= 0;
+		end
+		else begin
 			text_en_buf <= text_en;
+			graphic_en_buf <= graphic_en;
+		end
 	end
 	
 	always @(*) begin
@@ -235,6 +292,16 @@ module wb_vga (
 			wbm_we_o = wbm_we_text;
 			wbm_data_o = wbm_data_text;
 		end
+		else if (graphic_en_buf) begin
+			wbm_cyc_o = wbm_cyc_graphic;
+			wbm_stb_o = wbm_stb_graphic;
+			wbm_addr_o = wbm_addr_graphic;
+			wbm_cti_o = wbm_cti_graphic;
+			wbm_bte_o = wbm_bte_graphic;
+			wbm_sel_o = wbm_sel_graphic;
+			wbm_we_o = wbm_we_graphic;
+			wbm_data_o = wbm_data_graphic;
+		end
 	end
 	
 	// VGA outputs
@@ -250,6 +317,13 @@ module wb_vga (
 			r_color = {3{r_text}};
 			g_color = {3{g_text}};
 			b_color = {2{b_text}};
+		end
+		else if (graphic_en_buf) begin
+			h_sync = h_sync_graphic;
+			v_sync = v_sync_graphic;
+			r_color = r_graphic;
+			g_color = g_graphic;
+			b_color = b_graphic;
 		end
 	end
 	

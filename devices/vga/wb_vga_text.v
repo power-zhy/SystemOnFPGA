@@ -89,7 +89,6 @@ module wb_vga_text (
 	end
 	
 	// buffer
-	reg h_en_prev, v_en_prev;
 	reg [ASCII_H_WIDTH-2:0] buf_addr_w = 0;
 	reg line_switch;
 	wire [31:0] buf_data_r;
@@ -109,7 +108,7 @@ module wb_vga_text (
 		.clk_r(vga_clk),
 		.addr_r(h_count_core[H_COUNT_WIDTH-1:FONT_H_WIDTH+1]),
 		.data_r(buf_data_r)
-	);
+		);
 	
 	assign
 		ascii_data = h_count_d1[FONT_H_WIDTH] ? buf_data_r[31:16] : buf_data_r[15:0];
@@ -122,7 +121,12 @@ module wb_vga_text (
 		end
 	end
 	
-	always @(posedge wbm_clk_i) begin
+	// data transmission control
+	reg h_en_prev, v_en_prev;
+	wire wb_line_last, vga_line_done, vga_frame_done;
+	wire vga_line_done_d, vga_frame_done_d;
+	
+	always @(posedge vga_clk) begin
 		if (rst) begin
 			h_en_prev <= 0;
 			v_en_prev <= 0;
@@ -133,18 +137,21 @@ module wb_vga_text (
 		end
 	end
 	
-	// data transmission control
-	wire wb_line_last, vga_line_done, vga_frame_done;
 	assign
-		wb_line_last = buf_addr_w == h_disp_max>>(FONT_H_WIDTH+1),
-		vga_line_done = v_en_prev && h_en_prev && ~h_en_d2 && (v_count_d2[FONT_V_WIDTH-1:0] == {FONT_V_WIDTH{1'b1}}),
+		wb_line_last = (buf_addr_w == h_disp_max>>(FONT_H_WIDTH+1)),
+		vga_line_done = v_en_prev & h_en_prev & (~h_en_d2) & (v_count_d2[FONT_V_WIDTH-1:0] == {FONT_V_WIDTH{1'b1}}),
 		vga_frame_done = v_en_prev && h_en_prev && ~h_en_d2 && (v_count_d2 == v_disp_max);
+		// "vga_frame_done" should cover "vga_line_done" at last line
+	
+	pulse_detector #(.PULSE_VALUE(1))
+		PD1 (.clk_i(vga_clk), .dat_i(vga_line_done), .clk_d(wbm_clk_i), .dat_d(vga_line_done_d)),
+		PD2 (.clk_i(vga_clk), .dat_i(vga_frame_done), .clk_d(wbm_clk_i), .dat_d(vga_frame_done_d));
 	
 	localparam
-		S_IDLE = 0,
-		S_FIRST = 1,
-		S_FOLLOW = 2,
-		S_WAIT = 3;
+		S_IDLE = 0,  // idle
+		S_FIRST = 1,  // read VRAM's data of first line
+		S_FOLLOW = 2,  // read VRAM's data of follow line
+		S_WAIT = 3;  // wait for display
 	
 	reg [1:0] state = 0;
 	reg [1:0] next_state;
@@ -174,11 +181,11 @@ module wb_vga_text (
 				end
 			end
 			S_WAIT: begin
-				if (vga_frame_done) begin
+				if (vga_frame_done_d) begin
 					line_switch = 1;
 					next_state = S_FIRST;
 				end
-				else if (vga_line_done) begin
+				else if (vga_line_done_d) begin
 					line_switch = 1;
 					next_state = S_FOLLOW;
 				end
@@ -211,7 +218,7 @@ module wb_vga_text (
 	end
 	
 	always @(posedge wbm_clk_i) begin
-		if (rst || vga_frame_done)
+		if (rst || vga_frame_done_d)
 			wbm_addr_o[15:2] <= 0;
 		else if (wbm_cyc_o && wbm_ack_i)
 			wbm_addr_o[15:2] <= wbm_addr_o[15:2] + 1'h1;

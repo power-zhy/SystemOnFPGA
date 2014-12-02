@@ -144,70 +144,12 @@ module test_frame (
 		//mem_data = mem_oe_n ? mem_dout : {16{1'bz}},
 		mem_din = mem_data;
 	
-	// interface default value
-	`ifdef NO_LED
-	assign
-		led = 0;
-	`endif
-	
-	`ifdef NO_VGA
-	assign
-		vga_h_sync = 0,
-		vga_v_sync = 0,
-		vga_red = 0,
-		vga_green = 0,
-		vga_blue = 0;
-	`endif
-	
-	`ifdef NO_MEMORY
-	assign
-		mem_oe_n = 1,
-		mem_we_n = 1,
-		mem_addr = 0,
-		mem_dout = 0;
-	`define NO_RAM
-	`define NO_PCM
-	`endif
-	
-	`ifdef NO_RAM
-	assign
-		ram_clk = 0,
-		ram_ce_n = 1,
-		ram_adv_n = 1,
-		ram_cre = 0,
-		ram_lb_n = 1,
-		ram_ub_n = 1;
-	`endif
-	
-	`ifdef NO_PCM
-	assign
-		pcm_ce_n = 1,
-		pcm_rst_n = 1;
-	`endif
-	
-	`ifdef NO_KEYBOARD
-	assign
-		keyboard_clk = 1,
-		keyboard_dat = 1;
-	`endif
-	
-	`ifdef NO_SPI
-	assign
-		spi_sck = 0,
-		spi_mosi = 1,
-		spi_sel_sd = 0;
-	`endif
-	
-	`ifdef NO_UART
-	assign
-		uart_tx = 1;
-	`endif
-	
-	// test body
+	/*
+	// PSRAM test
 	test_psram #(
-		.CLK_FREQ(25)
+		.CLK_FREQ(CLK_FREQ_MEM)
 		) TEST_PSRAM (
-		.clk(clk_25m),
+		.clk(clk_mem),
 		.clk_bus(clk_bus),
 		.rst(rst_all),
 		.cs(btn_l_buf),
@@ -229,11 +171,16 @@ module test_frame (
 		.ram_din(mem_din),
 		.ram_dout(mem_dout)
 	);
-	
-	/*test_ppcm #(
-		.CLK_FREQ(25)
+	`define DISPLAY_SIG
+	`define MEMORY_SIG
+	`define RAM_SIG
+	*/
+	/*
+	// PPCM test
+	test_ppcm #(
+		.CLK_FREQ(CLK_FREQ_MEM)
 		) TEST_PPCM (
-		.clk(clk_25m),
+		.clk(clk_mem),
 		.clk_bus(clk_bus),
 		.rst(rst_all),
 		.cs(btn_l_buf),
@@ -248,12 +195,17 @@ module test_frame (
 		.pcm_addr(mem_addr),
 		.pcm_din(mem_din),
 		.pcm_dout(mem_dout)
-		);*/
+		);
+	`define DISPLAY_SIG
+	`define MEMORY_SIG
+	`define PCM_SIG
+	*/
 	
-	/*test_vga #(
-		.CLK_FREQ(25)
+	// VGA test
+	test_vga #(
+		.CLK_FREQ(CLK_FREQ_DEV)
 		) TEST_VGA (
-		.clk(clk_25m),
+		.clk(clk_dev),
 		.clk_100m(clk_100m),
 		.clk_bus(clk_bus),
 		.rst(rst_all),
@@ -267,12 +219,16 @@ module test_frame (
 		.vga_red(vga_red),
 		.vga_green(vga_green),
 		.vga_blue(vga_blue)
-		);*/
+		);
+	`define DISPLAY_SIG
+	`define VGA_SIG
 	
-	/*test_ps2 #(
-		.CLK_FREQ(25)
+	/*
+	// KEYBOARD test
+	test_ps2 #(
+		.CLK_FREQ(CLK_FREQ_DEV)
 		) TEST_PS2 (
-		.clk(clk_25m),
+		.clk(clk_dev),
 		.clk_bus(clk_bus),
 		.rst(rst_all),
 		.cs(btn_l_buf),
@@ -283,6 +239,69 @@ module test_frame (
 		.state(led),
 		.ps2_clk(keyboard_clk),
 		.ps2_dat(keyboard_dat)
-		);*/
+		);
+	`define DISPLAY_SIG
+	`define KEYBOARD_SIG
+	*/
+	
+	// default value for signals
+	`ifndef DISPLAY_SIG
+	assign
+		disp_data = 0,
+		led = 0;
+	`endif
+	
+	`ifndef VGA_SIG
+	assign
+		vga_h_sync = 0,
+		vga_v_sync = 0,
+		vga_red = 0,
+		vga_green = 0,
+		vga_blue = 0;
+	`endif
+	
+	`ifndef MEMORY_SIG
+	assign
+		mem_oe_n = 1,
+		mem_we_n = 1,
+		mem_addr = 0,
+		mem_dout = 0;
+	`define NO_RAM
+	`define NO_PCM
+	`endif
+	
+	`ifndef RAM_SIG
+	assign
+		ram_clk = 0,
+		ram_ce_n = 1,
+		ram_adv_n = 1,
+		ram_cre = 0,
+		ram_lb_n = 1,
+		ram_ub_n = 1;
+	`endif
+	
+	`ifndef PCM_SIG
+	assign
+		pcm_ce_n = 1,
+		pcm_rst_n = 1;
+	`endif
+	
+	`ifndef KEYBOARDB_SIG
+	assign
+		keyboard_clk = 1,
+		keyboard_dat = 1;
+	`endif
+	
+	`ifndef SPI_SIG
+	assign
+		spi_sck = 0,
+		spi_mosi = 1,
+		spi_sel_sd = 0;
+	`endif
+	
+	`ifndef UART_SIG
+	assign
+		uart_tx = 1;
+	`endif
 	
 endmodule

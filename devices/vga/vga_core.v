@@ -169,6 +169,150 @@ module vga_core (
 				v_disp_end = VGA_1024_768_60_V_DISP - 1;
 				v_pulse_value = VGA_1024_768_60_V_PV;
 			end
+			/*VGA_CODE_1024_768_70: begin
+				mode_en = 1;
+				dcm_m = VGA_1024_768_70_M;
+				dcm_d = VGA_1024_768_70_D;
+				h_disp_max = VGA_1024_768_70_H_DISP - 1;
+				v_disp_max = VGA_1024_768_70_V_DISP - 1;
+				p_disp_max = VGA_1024_768_70_H_DISP * VGA_1024_768_70_V_DISP - 1;
+				h_sync_start = VGA_1024_768_70_H_DISP + VGA_1024_768_70_H_FP - 1;
+				h_sync_end = VGA_1024_768_70_H_DISP + VGA_1024_768_70_H_FP + VGA_1024_768_70_H_PW - 1;
+				h_disp_start = VGA_1024_768_70_H_DISP + VGA_1024_768_70_H_FP + VGA_1024_768_70_H_PW + VGA_1024_768_70_H_BP - 1;
+				h_disp_end = VGA_1024_768_70_H_DISP - 1;
+				h_pulse_value = VGA_1024_768_70_H_PV;
+				v_sync_start = VGA_1024_768_70_V_DISP + VGA_1024_768_70_V_FP - 1;
+				v_sync_end = VGA_1024_768_70_V_DISP + VGA_1024_768_70_V_FP + VGA_1024_768_70_V_PW - 1;
+				v_disp_start = VGA_1024_768_70_V_DISP + VGA_1024_768_70_V_FP + VGA_1024_768_70_V_PW + VGA_1024_768_70_V_BP - 1;
+				v_disp_end = VGA_1024_768_70_V_DISP - 1;
+				v_pulse_value = VGA_1024_768_70_V_PV;
+			end
+			VGA_CODE_1280_768_60: begin
+				mode_en = 1;
+				dcm_m = VGA_1280_768_60_M;
+				dcm_d = VGA_1280_768_60_D;
+				h_disp_max = VGA_1280_768_60_H_DISP - 1;
+				v_disp_max = VGA_1280_768_60_V_DISP - 1;
+				p_disp_max = VGA_1280_768_60_H_DISP * VGA_1280_768_60_V_DISP - 1;
+				h_sync_start = VGA_1280_768_60_H_DISP + VGA_1280_768_60_H_FP - 1;
+				h_sync_end = VGA_1280_768_60_H_DISP + VGA_1280_768_60_H_FP + VGA_1280_768_60_H_PW - 1;
+				h_disp_start = VGA_1280_768_60_H_DISP + VGA_1280_768_60_H_FP + VGA_1280_768_60_H_PW + VGA_1280_768_60_H_BP - 1;
+				h_disp_end = VGA_1280_768_60_H_DISP - 1;
+				h_pulse_value = VGA_1280_768_60_H_PV;
+				v_sync_start = VGA_1280_768_60_V_DISP + VGA_1280_768_60_V_FP - 1;
+				v_sync_end = VGA_1280_768_60_V_DISP + VGA_1280_768_60_V_FP + VGA_1280_768_60_V_PW - 1;
+				v_disp_start = VGA_1280_768_60_V_DISP + VGA_1280_768_60_V_FP + VGA_1280_768_60_V_PW + VGA_1280_768_60_V_BP - 1;
+				v_disp_end = VGA_1280_768_60_V_DISP - 1;
+				v_pulse_value = VGA_1280_768_60_V_PV;
+			end
+			VGA_CODE_1280_768_75: begin
+				mode_en = 1;
+				dcm_m = VGA_1280_768_75_M;
+				dcm_d = VGA_1280_768_75_D;
+				h_disp_max = VGA_1280_768_75_H_DISP - 1;
+				v_disp_max = VGA_1280_768_75_V_DISP - 1;
+				p_disp_max = VGA_1280_768_75_H_DISP * VGA_1280_768_75_V_DISP - 1;
+				h_sync_start = VGA_1280_768_75_H_DISP + VGA_1280_768_75_H_FP - 1;
+				h_sync_end = VGA_1280_768_75_H_DISP + VGA_1280_768_75_H_FP + VGA_1280_768_75_H_PW - 1;
+				h_disp_start = VGA_1280_768_75_H_DISP + VGA_1280_768_75_H_FP + VGA_1280_768_75_H_PW + VGA_1280_768_75_H_BP - 1;
+				h_disp_end = VGA_1280_768_75_H_DISP - 1;
+				h_pulse_value = VGA_1280_768_75_H_PV;
+				v_sync_start = VGA_1280_768_75_V_DISP + VGA_1280_768_75_V_FP - 1;
+				v_sync_end = VGA_1280_768_75_V_DISP + VGA_1280_768_75_V_FP + VGA_1280_768_75_V_PW - 1;
+				v_disp_start = VGA_1280_768_75_V_DISP + VGA_1280_768_75_V_FP + VGA_1280_768_75_V_PW + VGA_1280_768_75_V_BP - 1;
+				v_disp_end = VGA_1280_768_75_V_DISP - 1;
+				v_pulse_value = VGA_1280_768_75_V_PV;
+			end
+			VGA_CODE_1280_960_60: begin
+				mode_en = 1;
+				dcm_m = VGA_1280_960_60_M;
+				dcm_d = VGA_1280_960_60_D;
+				h_disp_max = VGA_1280_960_60_H_DISP - 1;
+				v_disp_max = VGA_1280_960_60_V_DISP - 1;
+				p_disp_max = VGA_1280_960_60_H_DISP * VGA_1280_960_60_V_DISP - 1;
+				h_sync_start = VGA_1280_960_60_H_DISP + VGA_1280_960_60_H_FP - 1;
+				h_sync_end = VGA_1280_960_60_H_DISP + VGA_1280_960_60_H_FP + VGA_1280_960_60_H_PW - 1;
+				h_disp_start = VGA_1280_960_60_H_DISP + VGA_1280_960_60_H_FP + VGA_1280_960_60_H_PW + VGA_1280_960_60_H_BP - 1;
+				h_disp_end = VGA_1280_960_60_H_DISP - 1;
+				h_pulse_value = VGA_1280_960_60_H_PV;
+				v_sync_start = VGA_1280_960_60_V_DISP + VGA_1280_960_60_V_FP - 1;
+				v_sync_end = VGA_1280_960_60_V_DISP + VGA_1280_960_60_V_FP + VGA_1280_960_60_V_PW - 1;
+				v_disp_start = VGA_1280_960_60_V_DISP + VGA_1280_960_60_V_FP + VGA_1280_960_60_V_PW + VGA_1280_960_60_V_BP - 1;
+				v_disp_end = VGA_1280_960_60_V_DISP - 1;
+				v_pulse_value = VGA_1280_960_60_V_PV;
+			end
+			VGA_CODE_1280_960_85: begin
+				mode_en = 1;
+				dcm_m = VGA_1280_960_85_M;
+				dcm_d = VGA_1280_960_85_D;
+				h_disp_max = VGA_1280_960_85_H_DISP - 1;
+				v_disp_max = VGA_1280_960_85_V_DISP - 1;
+				p_disp_max = VGA_1280_960_85_H_DISP * VGA_1280_960_85_V_DISP - 1;
+				h_sync_start = VGA_1280_960_85_H_DISP + VGA_1280_960_85_H_FP - 1;
+				h_sync_end = VGA_1280_960_85_H_DISP + VGA_1280_960_85_H_FP + VGA_1280_960_85_H_PW - 1;
+				h_disp_start = VGA_1280_960_85_H_DISP + VGA_1280_960_85_H_FP + VGA_1280_960_85_H_PW + VGA_1280_960_85_H_BP - 1;
+				h_disp_end = VGA_1280_960_85_H_DISP - 1;
+				h_pulse_value = VGA_1280_960_85_H_PV;
+				v_sync_start = VGA_1280_960_85_V_DISP + VGA_1280_960_85_V_FP - 1;
+				v_sync_end = VGA_1280_960_85_V_DISP + VGA_1280_960_85_V_FP + VGA_1280_960_85_V_PW - 1;
+				v_disp_start = VGA_1280_960_85_V_DISP + VGA_1280_960_85_V_FP + VGA_1280_960_85_V_PW + VGA_1280_960_85_V_BP - 1;
+				v_disp_end = VGA_1280_960_85_V_DISP - 1;
+				v_pulse_value = VGA_1280_960_85_V_PV;
+			end
+			VGA_CODE_1280_1024_60: begin
+				mode_en = 1;
+				dcm_m = VGA_1280_1024_60_M;
+				dcm_d = VGA_1280_1024_60_D;
+				h_disp_max = VGA_1280_1024_60_H_DISP - 1;
+				v_disp_max = VGA_1280_1024_60_V_DISP - 1;
+				p_disp_max = VGA_1280_1024_60_H_DISP * VGA_1280_1024_60_V_DISP - 1;
+				h_sync_start = VGA_1280_1024_60_H_DISP + VGA_1280_1024_60_H_FP - 1;
+				h_sync_end = VGA_1280_1024_60_H_DISP + VGA_1280_1024_60_H_FP + VGA_1280_1024_60_H_PW - 1;
+				h_disp_start = VGA_1280_1024_60_H_DISP + VGA_1280_1024_60_H_FP + VGA_1280_1024_60_H_PW + VGA_1280_1024_60_H_BP - 1;
+				h_disp_end = VGA_1280_1024_60_H_DISP - 1;
+				h_pulse_value = VGA_1280_1024_60_H_PV;
+				v_sync_start = VGA_1280_1024_60_V_DISP + VGA_1280_1024_60_V_FP - 1;
+				v_sync_end = VGA_1280_1024_60_V_DISP + VGA_1280_1024_60_V_FP + VGA_1280_1024_60_V_PW - 1;
+				v_disp_start = VGA_1280_1024_60_V_DISP + VGA_1280_1024_60_V_FP + VGA_1280_1024_60_V_PW + VGA_1280_1024_60_V_BP - 1;
+				v_disp_end = VGA_1280_1024_60_V_DISP - 1;
+				v_pulse_value = VGA_1280_1024_60_V_PV;
+			end
+			VGA_CODE_1280_1024_75: begin
+				mode_en = 1;
+				dcm_m = VGA_1280_1024_75_M;
+				dcm_d = VGA_1280_1024_75_D;
+				h_disp_max = VGA_1280_1024_75_H_DISP - 1;
+				v_disp_max = VGA_1280_1024_75_V_DISP - 1;
+				p_disp_max = VGA_1280_1024_75_H_DISP * VGA_1280_1024_75_V_DISP - 1;
+				h_sync_start = VGA_1280_1024_75_H_DISP + VGA_1280_1024_75_H_FP - 1;
+				h_sync_end = VGA_1280_1024_75_H_DISP + VGA_1280_1024_75_H_FP + VGA_1280_1024_75_H_PW - 1;
+				h_disp_start = VGA_1280_1024_75_H_DISP + VGA_1280_1024_75_H_FP + VGA_1280_1024_75_H_PW + VGA_1280_1024_75_H_BP - 1;
+				h_disp_end = VGA_1280_1024_75_H_DISP - 1;
+				h_pulse_value = VGA_1280_1024_75_H_PV;
+				v_sync_start = VGA_1280_1024_75_V_DISP + VGA_1280_1024_75_V_FP - 1;
+				v_sync_end = VGA_1280_1024_75_V_DISP + VGA_1280_1024_75_V_FP + VGA_1280_1024_75_V_PW - 1;
+				v_disp_start = VGA_1280_1024_75_V_DISP + VGA_1280_1024_75_V_FP + VGA_1280_1024_75_V_PW + VGA_1280_1024_75_V_BP - 1;
+				v_disp_end = VGA_1280_1024_75_V_DISP - 1;
+				v_pulse_value = VGA_1280_1024_75_V_PV;
+			end
+			VGA_CODE_1360_768_60: begin
+				mode_en = 1;
+				dcm_m = VGA_1360_768_60_M;
+				dcm_d = VGA_1360_768_60_D;
+				h_disp_max = VGA_1360_768_60_H_DISP - 1;
+				v_disp_max = VGA_1360_768_60_V_DISP - 1;
+				p_disp_max = VGA_1360_768_60_H_DISP * VGA_1360_768_60_V_DISP - 1;
+				h_sync_start = VGA_1360_768_60_H_DISP + VGA_1360_768_60_H_FP - 1;
+				h_sync_end = VGA_1360_768_60_H_DISP + VGA_1360_768_60_H_FP + VGA_1360_768_60_H_PW - 1;
+				h_disp_start = VGA_1360_768_60_H_DISP + VGA_1360_768_60_H_FP + VGA_1360_768_60_H_PW + VGA_1360_768_60_H_BP - 1;
+				h_disp_end = VGA_1360_768_60_H_DISP - 1;
+				h_pulse_value = VGA_1360_768_60_H_PV;
+				v_sync_start = VGA_1360_768_60_V_DISP + VGA_1360_768_60_V_FP - 1;
+				v_sync_end = VGA_1360_768_60_V_DISP + VGA_1360_768_60_V_FP + VGA_1360_768_60_V_PW - 1;
+				v_disp_start = VGA_1360_768_60_V_DISP + VGA_1360_768_60_V_FP + VGA_1360_768_60_V_PW + VGA_1360_768_60_V_BP - 1;
+				v_disp_end = VGA_1360_768_60_V_DISP - 1;
+				v_pulse_value = VGA_1360_768_60_V_PV;
+			end*/
 			default: begin
 				mode_en = 0;
 				dcm_m = 2;
