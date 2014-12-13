@@ -24,6 +24,8 @@ module wb_ps2 (
 	output reg interrupt
 	);
 	
+	`define NO_PS2_WRITE
+	
 	parameter
 		CLK_FREQ = 100;  // main clock frequency in MHz, should be multiple of 10M
 	parameter
@@ -62,8 +64,11 @@ module wb_ps2 (
 		.ps2_dat(ps2_dat)
 		);
 	
-	assign
-		rx_en = ~data_valid;
+	`ifndef NO_PS2_WRITE
+	assign rx_en = ~data_valid;
+	`else
+	assign rx_en = 1;
+	`endif
 	
 	always @(posedge clk) begin
 		if (rst) begin
