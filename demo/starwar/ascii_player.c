@@ -35,10 +35,10 @@ uint32 col_num = 0;
 
 uint32 ctrl_vga_mode = 0;
 uint32 ctrl_play_back = 0;
-uint32 ctrl_play_speed = 0;  // 6 for normal, 2 for fast
+uint32 ctrl_play_speed = 0;  // 6 for normal, 2 for fast, 7 for slow
 
 
-volatile int32 times(int32 value, int32 count) {
+/*volatile int32 mul(int32 value, int32 count) {
 	int32 result = 0;
 	if (count < 0) {
 		value = -value;
@@ -49,10 +49,10 @@ volatile int32 times(int32 value, int32 count) {
 		count --;
 	}
 	return result;
-}
+}*/
 
-/*#define T(o,a,b,i) (b&(1<<i)) && (o+=(a<<i))
-int32 times(int32 a, int32 b) {
+#define T(o,a,b,i) (b&(1<<i)) && (o+=(a<<i))
+int32 mul(int32 a, int32 b) {
 	int32 result = 0;
 	T(result, a, b, 0);
 	T(result, a, b, 1);
@@ -87,7 +87,7 @@ int32 times(int32 a, int32 b) {
 	T(result, a, b, 30);
 	T(result, a, b, 31);
 	return result;
-}*/
+}
 
 void mem_set(int32* addr, int32 value, uint32 count) {
 	while (count != 0) {
@@ -176,7 +176,7 @@ int32 find_frame(uint32 backward) {
 }
 
 int32 render(uint16* frame_base) {
-	uint16* row_base = frame_base + times(screen_width, row_num);
+	uint16* row_base = frame_base + mul(screen_width, row_num);
 	uint16* col_curr = row_base + col_num;
 	while (1) {
 		uint8 data = *file_index;
@@ -192,14 +192,14 @@ int32 render(uint16* frame_base) {
 				movie_height = *(file_index+1);
 				movie_width = *(file_index+2);
 				update_position();
-				row_base = frame_base + times(screen_width, row_num);
+				row_base = frame_base + mul(screen_width, row_num);
 				col_curr = row_base + col_num;
 				file_index += 2;
 			}
 			else if (data == 0xF1) {  // move cursor
 				row_num = *(file_index+1) + blank_top;
 				col_num = *(file_index+2) + blank_left;
-				row_base = frame_base + times(screen_width, row_num);
+				row_base = frame_base + mul(screen_width, row_num);
 				col_curr = row_base + col_num;
 				file_index += 2;
 			}
@@ -236,14 +236,15 @@ int32 sleep(uint32 value) {
 	vga_config[1] = VRAM_ADDR + VRAM_RANGE;
 	mem_copy((int32*)(VRAM_ADDR + VRAM_RANGE), (int32*)VRAM_ADDR, screen_range>>1);
 	vga_config[1] = VRAM_ADDR;
-	__asm__ ("mtc0 %0, $7": : "r"(value << ctrl_play_speed));
+	value = (value<<ctrl_play_speed) - 1;
+	__asm__ ("mtc0 %0, $7": : "r"(value));
 	__asm__ ("mtc0 %0, $5": : "r"(1<<0));
 	uint32 data = 0;
 	while (1) {
 		// check board input
 		data = board_config[0];
 		ctrl_play_back = (data & 0x800) ? 1 : 0;
-		ctrl_play_speed = (data & 0xC00) ? 2 : 6;
+		ctrl_play_speed = (data & 0xC00) ? 2 : ((data & 0x200) ? 7 : 6);
 		if ((data & 0x100) && ((data & 0xF) != ctrl_vga_mode)) {
 			vga_config[1] = VRAM_ADDR + VRAM_RANGE;
 			init_vga(data & 0xF, VRAM_ADDR);

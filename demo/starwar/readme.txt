@@ -14,8 +14,10 @@ When running:
 	Center Button: Restart
 	Left Button: Fast Rewind
 	Right Button: Fast Forward
+	Up Button: Half Play Speed
 	Down Button: Set the VGA's resolution by Switch[3:0]
 	Switch[7]: System Pause
+	7-Segment Display: Show current frame number
 
 
 Extra - ASCII Player's coding standard:

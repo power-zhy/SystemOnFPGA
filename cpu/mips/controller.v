@@ -95,6 +95,7 @@ module controller (/*AUTOARG*/
 						wb_addr_src = WB_ADDR_RD;
 						wb_data_src = WB_DATA_ALU;
 						wb_wen = 1;
+						rs_used = 1;
 						rt_used = 1;
 					end
 					R_FUNC_SRLV: begin
@@ -102,6 +103,7 @@ module controller (/*AUTOARG*/
 						wb_addr_src = WB_ADDR_RD;
 						wb_data_src = WB_DATA_ALU;
 						wb_wen = 1;
+						rs_used = 1;
 						rt_used = 1;
 					end
 					R_FUNC_SRAV: begin
@@ -110,6 +112,7 @@ module controller (/*AUTOARG*/
 						wb_data_src = WB_DATA_ALU;
 						exe_signed = 1;
 						wb_wen = 1;
+						rs_used = 1;
 						rt_used = 1;
 					end
 					R_FUNC_JR: begin
