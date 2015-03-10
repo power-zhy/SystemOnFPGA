@@ -8,7 +8,7 @@
 module vga_core (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
-	input wire clk_100m,  // 100MHz clock used to generate VGA's clock
+	input wire clk_base,  // base clock used to generate VGA's clock, should be at 100MHz
 	input wire [3:0] mode_in,  // VGA's mode, see "vga_define.vh" for details
 	output wire vga_clk,  // clock for VGA signals, minimum is 25MHz
 	output reg vga_valid,  // sync signals valid flag
@@ -352,7 +352,7 @@ module vga_core (
 		.SPREAD_SPECTRUM("NONE"),
 		.STARTUP_WAIT("FALSE")
 		) DCM_VGA (
-		.CLKIN(clk_100m),
+		.CLKIN(clk_base),
 		.RST(rst),
 		.FREEZEDCM(1'b0),
 		.CLKFX(vga_clk_unbuf),

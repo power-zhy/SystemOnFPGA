@@ -3,13 +3,12 @@
 
 module test_vga (
 	input wire clk,
-	input wire clk_100m,
+	input wire clk_base,
 	input wire clk_bus,
 	input wire rst,
 	input wire cs,
-	input wire high,
 	input wire [7:0] mode,
-	output wire [15:0] data,
+	output wire [31:0] data,
 	output wire [7:0] state,
 	// VGA interfaces
 	output wire vga_h_sync,
@@ -57,7 +56,7 @@ module test_vga (
 		) WB_VGA (
 		.clk(clk),
 		.rst(rst),
-		.clk_100m(clk_100m),
+		.clk_base(clk_base),
 		.h_sync(vga_h_sync),
 		.v_sync(vga_v_sync),
 		.r_color(vga_red),
@@ -95,7 +94,7 @@ module test_vga (
 			data_buf <= dout;
 	end
 	
-	assign data = high ? data_buf[31:16] : data_buf[15:0];
+	assign data = data_buf;
 	assign state = {wb_cyc, wb_stb, 1'b0, wb_ack, 3'b0, ack};
 	
 endmodule

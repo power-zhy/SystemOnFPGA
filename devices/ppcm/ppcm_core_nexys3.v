@@ -5,7 +5,7 @@
  * Parallel PCM core, read only.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module ppcm_core (
+module ppcm_core_nexys3 (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire cs,  // chip select
@@ -78,7 +78,7 @@ module ppcm_core (
 				end
 			end
 			S_WAIT: begin
-				if (count == COUNT_START-COUNT_DATA-1) begin
+				if (count == (COUNT_START==COUNT_DATA ? 0 : COUNT_START-COUNT_DATA-1)) begin
 					next_state = S_OP1;
 					next_count = 0;
 				end
@@ -148,7 +148,7 @@ module ppcm_core (
 				busy <= 1;
 				pcm_ce_n <= 0;
 				pcm_oe_n <= 0;
-				if (count == COUNT_DATA-1)
+				if (next_count == COUNT_DATA-1)
 					pcm_addr <= pcm_addr + 1'h1;
 				else
 					pcm_addr <= pcm_addr;
@@ -158,11 +158,11 @@ module ppcm_core (
 	
 	always @(posedge clk) begin
 		ack <= 0;
-		if (~rst) case (state)
-			S_OP1: if (count == COUNT_DATA-1) begin
+		if (~rst) case (next_state)
+			S_OP1: if (next_count == COUNT_DATA-1) begin
 				dout <= {16'b0, pcm_din};
 			end
-			S_OP2: if (count == COUNT_DATA-1) begin
+			S_OP2: if (next_count == COUNT_DATA-1) begin
 				dout <= {pcm_din, dout[15:0]};
 				ack <= 1;
 			end

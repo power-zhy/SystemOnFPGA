@@ -1,15 +1,14 @@
 `include "define.vh"
 
 
-module test_psram (
+module test_psram_nexys3 (
 	input wire clk,
 	input wire clk_bus,
 	input wire rst,
 	input wire cs,
 	input wire we,
-	input wire high,
 	input wire [7:0] addr,
-	output wire [15:0] data,
+	output wire [31:0] data,
 	output wire [7:0] state,
 	// PSRAM interfaces
 	output wire ram_ce_n,
@@ -52,7 +51,7 @@ module test_psram (
 			cs_buf <= 0;
 	end
 	
-	/*psram_core #(
+	/*psram_core_nexys3 #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS)
 		) PSRAM_CORE (
@@ -81,10 +80,10 @@ module test_psram (
 		.ram_dout(ram_dout)
 		);*/
 	
-	wb_psram #(
+	wb_psram_nexys3 #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS),
-		.HIGH_ADDR(8'h00),
+		.HIGH_ADDR(0),
 		.BUF_ADDR_BITS(4)
 		) WB_PSRAM (
 		.clk(clk),
@@ -122,7 +121,7 @@ module test_psram (
 			data_buf <= dout;
 	end
 	
-	assign data = high ? data_buf[31:16] : data_buf[15:0];
+	assign data = data_buf;
 	assign state = {busy, ram_ce_n, ram_oe_n, ram_we_n, ram_adv_n, ram_wait, 1'b0, ack};
 	
 endmodule

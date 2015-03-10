@@ -5,7 +5,7 @@
  * Serial PCM core, read only.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module spcm_core (
+module spcm_core_nexys3 (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire cs,  // chip select

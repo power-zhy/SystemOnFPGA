@@ -5,7 +5,7 @@
  * Clock generator.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module clk_gen (
+module clk_gen_nexys3 (
 	input wire clk_pad,  // input clock, 100MHz
 	output wire clk_100m,
 	output wire clk_50m,

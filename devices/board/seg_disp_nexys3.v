@@ -5,7 +5,7 @@
  * Display number using 7-segment tubes.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module seg_disp (
+module seg_disp_nexys3 (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire [3:0] en,  // enable for each tube

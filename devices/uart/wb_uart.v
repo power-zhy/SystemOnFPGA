@@ -61,7 +61,7 @@ module wb_uart (
 		tx_en = reg_mode[0] & ~tx_empty;
 	
 	// core
-	uart_tx #(
+	uart_core_tx #(
 		.CLK_FREQ(CLK_FREQ),
 		.BAUD_DIV_WIDTH(8)
 		) UART_TX (
@@ -79,7 +79,7 @@ module wb_uart (
 		.tx(tx)
 		);
 	
-	uart_rx #(
+	uart_core_rx #(
 		.CLK_FREQ(CLK_FREQ),
 		.BAUD_DIV_WIDTH(8)
 		) UART_RX (

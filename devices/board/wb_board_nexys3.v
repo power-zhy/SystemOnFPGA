@@ -5,7 +5,7 @@
  * Board IOs with wishbone connection interfaces.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module wb_board (
+module wb_board_nexys3 (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	// board interfaces
@@ -60,7 +60,7 @@ module wb_board (
 		dot = reg_out[11:8];
 	`endif
 	
-	seg_disp SEG_DISP (
+	seg_disp_nexys3 SEG_DISP (
 		.clk(clk),
 		.rst(rst),
 		.en(en),

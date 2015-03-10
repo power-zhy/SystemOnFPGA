@@ -5,7 +5,7 @@
  * UART RX part for receiving data only.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module uart_rx (
+module uart_core_rx (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire [BAUD_DIV_WIDTH-1:0] baud_div,  // baud rate division, should be 10M/8/baudrate-1
@@ -167,7 +167,7 @@ module uart_rx (
 						sample_count <= 0;
 						pos_count <= 0;
 						neg_count <= 0;
-						if (bit_count != trans_bits) begin
+						/*if (bit_count != trans_bits) begin
 							bit_count <= bit_count + 1'h1;
 							data_buf <= {(pos_count > neg_count), data_buf[TRANS_BITS_MAX-1:1]};  // would not save the last stop bit
 						end
@@ -177,7 +177,15 @@ module uart_rx (
 								ack <= 1;
 							else
 								err <= 1;
+						end*/
+						if (bit_count == trans_bits-1'h1) begin
+							ack <= 1;
+							bit_count <= 0;
 						end
+						else begin
+							bit_count <= bit_count + 1'h1;
+						end
+						data_buf <= {(pos_count > neg_count), data_buf[TRANS_BITS_MAX-1:1]};  // would not save the last stop bit
 					end
 				end
 			end

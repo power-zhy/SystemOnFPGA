@@ -2,49 +2,51 @@
 
 
 /**
- * System On FPGA, top module for Nexys3 board.
+ * System On FPGA, top module for AnvylSword board.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
 module SystemOnFPGA_Nexys3 (
 	// board
 	input wire clk,  // on board clock, 100MHz
-	input wire rst,  // reset button
-	input wire [7:0] switch,  // switches
-	output wire [7:0] led,  // LEDs
-	input wire btn_l,  // left button
-	input wire btn_r,  // right button
-	input wire btn_u,  // up button
-	input wire btn_d,  // down button
-	output wire [7:0] segment,  // segment for 7-segment display tube
-	output wire [3:0] anode,  // anode for 7-segment display tube
-	// memory
-	output wire ram_ce_n,
-	output wire ram_clk,
-	output wire ram_adv_n,
-	output wire ram_cre,
-	output wire ram_lb_n,
-	output wire ram_ub_n,
-	input wire ram_wait,
-	output wire pcm_ce_n,
-	output wire pcm_rst_n,
-	output wire mem_oe_n,
-	output wire mem_we_n,
-	output wire [23:1] mem_addr,
-	inout wire [15:0] mem_data,
+	input wire rst_n,  // reset button
+	input wire [15:0] switch,
+	input wire [3:0] btn_x,
+	input wire [3:0] btn_y,
+	output wire led_clk,
+	output wire led_clr_n,
+	output wire led_do,
+	output wire seg_clk,
+	output wire seg_clr_n,
+	output wire seg_do,
+	output wire tri_led0_r_n,
+	output wire tri_led0_g_n,
+	output wire tri_led0_b_n,
+	output wire tri_led1_r_n,
+	output wire tri_led1_g_n,
+	output wire tri_led1_b_n,
+	// SRAM
+	output wire sram_ce_n,
+	output wire sram_oe_n,
+	output wire sram_we_n,
+	output wire [19:0] sram_addr,
+	inout wire [47:0] sram_data,
+	// flash
+	output wire [1:0] flash_ce_n,
+	output wire flash_rst_n,
+	output wire flash_oe_n,
+	output wire flash_we_n,
+	input wire [1:0] flash_ready,
+	output wire [25:0] flash_addr,
+	inout wire [31:0] flash_data,
 	// VGA
 	output wire vga_h_sync,
 	output wire vga_v_sync,
-	output wire [2:0] vga_red,
-	output wire [2:0] vga_green,
-	output wire [2:1] vga_blue,
+	output wire [3:0] vga_red,
+	output wire [3:0] vga_green,
+	output wire [3:0] vga_blue,
 	// keyboard
 	inout wire keyboard_clk,
 	inout wire keyboard_dat,
-	// SPI
-	output wire spi_sck,
-	output wire spi_mosi,
-	input wire spi_miso,
-	output wire spi_sel_sd,
 	// UART
 	input wire uart_rx,
 	output wire uart_tx
@@ -198,8 +200,10 @@ module SystemOnFPGA_Nexys3 (
 	wire uart_ack_o;
 	
 	// anti-jitter
-	wire [7:0] switch_buf;
-	wire btn_l_buf, btn_r_buf, btn_u_buf, btn_d_buf, rst_buf;
+	wire [15:0] switch_buf;
+	wire [3:0] btn_x_buf;
+	wire [3:0] btn_y_buf;
+	wire rst_buf;
 	
 	`ifndef SIMULATING
 	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(0))
@@ -211,19 +215,29 @@ module SystemOnFPGA_Nexys3 (
 		AJ5 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[5]), .sig_o(switch_buf[5])),
 		AJ6 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[6]), .sig_o(switch_buf[6])),
 		AJ7 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[7]), .sig_o(switch_buf[7])),
-		AJL (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_l), .sig_o(btn_l_buf)),
-		AJR (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_r), .sig_o(btn_r_buf)),
-		AJU (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_u), .sig_o(btn_u_buf)),
-		AJD (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_d), .sig_o(btn_d_buf));
+		AJ8 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[8]), .sig_o(switch_buf[8])),
+		AJ9 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[9]), .sig_o(switch_buf[9])),
+		AJ10 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[10]), .sig_o(switch_buf[10])),
+		AJ11 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[11]), .sig_o(switch_buf[11])),
+		AJ12 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[12]), .sig_o(switch_buf[12])),
+		AJ13 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[13]), .sig_o(switch_buf[13])),
+		AJ14 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[14]), .sig_o(switch_buf[14])),
+		AJ15 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[15]), .sig_o(switch_buf[15])),
+		AJX0 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_x[0]), .sig_o(btn_x_buf[0])),
+		AJX1 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_x[1]), .sig_o(btn_x_buf[1])),
+		AJX2 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_x[2]), .sig_o(btn_x_buf[2])),
+		AJX3 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_x[3]), .sig_o(btn_x_buf[3])),
+		AJY0 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_y[0]), .sig_o(btn_y_buf[0])),
+		AJY1 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_y[1]), .sig_o(btn_y_buf[1])),
+		AJY2 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_y[2]), .sig_o(btn_y_buf[2])),
+		AJY3 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_y[3]), .sig_o(btn_y_buf[3]));
 	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(1))
-		AJRST (.clk(clk_cpu), .rst(1'b0), .sig_i(rst), .sig_o(rst_buf));
+		AJRST (.clk(clk_cpu), .rst(1'b0), .sig_i(~rst_n), .sig_o(rst_buf));
 	`else
 	assign
 		switch_buf = switch,
-		btn_l_buf = btn_l,
-		btn_r_buf = btn_r,
-		btn_u_buf = btn_u,
-		btn_d_buf = btn_d,
+		btn_x_buf = btn_x,
+		btn_y_buf = btn_y,
 		rst_buf = rst;
 	`endif
 	
@@ -231,7 +245,7 @@ module SystemOnFPGA_Nexys3 (
 	wire locked;
 	reg [15:0] rst_count = 16'hFFFF;
 	
-	clk_gen_nexys3 CLK_GEN (
+	clk_gen_anvylsword CLK_GEN (
 		.clk_pad(clk),
 		.clk_100m(clk_100m),
 		.clk_50m(clk_50m),
@@ -267,30 +281,30 @@ module SystemOnFPGA_Nexys3 (
 	wire debug_en;
 	wire debug_step;
 	wire [6:0] debug_addr;
-	wire [31:0] debug_data_cpu, debug_data_mem;
+	wire [31:0] debug_data_cpu;
 	reg [31:0] debug_data;
 	wire debug_disp_en;
-	wire [7:0] debug_disp_led;
-	wire [15:0] debug_disp_data;
-	wire [3:0] debug_disp_dot;
+	wire [15:0] debug_disp_led;
+	wire [31:0] debug_disp_data;
+	wire [7:0] debug_disp_dot;
 	
 	always @(*) begin
 		case (debug_addr[6:5])
 			0: debug_data = debug_data_cpu;  // GPR
 			1: debug_data = debug_data_cpu;  // DATAPATH
 			2: debug_data = debug_data_cpu;  // CP0
-			3: debug_data = debug_data_mem;  // MEMORY
+			3: debug_data = debug_data_cpu;  // Reversed
 		endcase
 	end
 	
 	assign
 		debug_en = switch_buf[7],
-		debug_step = btn_r_buf,
+		debug_step = switch_buf[8],
 		debug_addr = switch_buf[6:0],
-		debug_disp_en = debug_en ^ btn_u_buf,
-		debug_disp_led = {1'b0, vram_cyc_o, icmu_cyc_o, dcmu_cyc_o, 1'b0, ram_cyc_i, rom_cyc_i, dev_cyc_i},
-		debug_disp_data = btn_d_buf ? debug_data[31:16] : debug_data[15:0],
-		debug_disp_dot = 4'b0;
+		debug_disp_en = debug_en ^ switch_buf[9],
+		debug_disp_led = {9'b0, vram_cyc_o, icmu_cyc_o, dcmu_cyc_o, 1'b0, ram_cyc_i, rom_cyc_i, dev_cyc_i},
+		debug_disp_data = debug_data,
+		debug_disp_dot = 8'b0;
 	`endif
 	
 	// wishbone bus
@@ -413,54 +427,71 @@ module SystemOnFPGA_Nexys3 (
 	
 	// memory (including RAM and ROM)
 	`ifndef NO_MEMORY
-	wb_memory_nexys3 #(
+	wire [47:0] sram_din, sram_dout;
+	assign
+		sram_data = sram_we_n ? {48{1'bz}} : sram_dout,
+		//sram_data = sram_oe_n ? sram_dout : {48{1'bz}},
+		sram_din = sram_data;
+	
+	wb_sram_anvylsword #(
+		.ADDR_BITS(ADDR_BITS),
+		.HIGH_ADDR(0)
+		) WB_SRAM (
+		.rst(1'b0),
+		.sram_ce_n(sram_ce_n),
+		.sram_oe_n(sram_oe_n),
+		.sram_we_n(sram_we_n),
+		.sram_addr(sram_addr),
+		.sram_din(sram_din),
+		.sram_dout(sram_dout),
+		.wbs_clk_i(clk_bus),
+		.wbs_cyc_i(ram_cyc_i),
+		.wbs_stb_i(ram_stb_i),
+		.wbs_addr_i(ram_addr_i),
+		.wbs_cti_i(ram_cti_i),
+		.wbs_bte_i(ram_bte_i),
+		.wbs_sel_i(ram_sel_i),
+		.wbs_we_i(ram_we_i),
+		.wbs_data_i(ram_data_i),
+		.wbs_data_o(ram_data_o),
+		.wbs_ack_o(ram_ack_o)
+		);
+	
+	wire [31:0] flash_din, flash_dout;
+	assign
+		flash_data = flash_we_n ? {32{1'bz}} : flash_dout,
+		//flash_data = flash_oe_n ? flash_dout : {32{1'bz}},
+		flash_din = flash_data;
+	
+	wb_flash_anvylsword #(
 		.CLK_FREQ(CLK_FREQ_MEM),
-		.ADDR_BITS(24),
-		.RAM_HIGH_ADDR(8'h00),
-		.PCM_HIGH_ADDR(8'hFF),
+		.ADDR_BITS(25),
+		.HIGH_ADDR(7'h00),
 		.BUF_ADDR_BITS(4)
-		) WB_MEMORY (
+		) WB_FLASH (
 		.clk(clk_mem),
 		.rst(1'b0),
-		`ifdef DEBUG
-		.debug_addr(debug_addr[4:0]),
-		.debug_data(debug_data_mem),
-		`endif
-		.ram_clk_i(clk_bus),
-		.ram_cyc_i(ram_cyc_i),
-		.ram_stb_i(ram_stb_i),
-		.ram_addr_i(ram_addr_i),
-		.ram_cti_i(ram_cti_i),
-		.ram_bte_i(ram_bte_i),
-		.ram_sel_i(ram_sel_i),
-		.ram_we_i(ram_we_i),
-		.ram_data_i(ram_data_i),
-		.ram_data_o(ram_data_o),
-		.ram_ack_o(ram_ack_o),
-		.pcm_clk_i(clk_bus),
-		.pcm_cyc_i(rom_cyc_i),
-		.pcm_stb_i(rom_stb_i),
-		.pcm_addr_i(rom_addr_i),
-		.pcm_cti_i(rom_cti_i),
-		.pcm_bte_i(rom_bte_i),
-		.pcm_sel_i(rom_sel_i),
-		.pcm_we_i(rom_we_i),
-		.pcm_data_i(rom_data_i),
-		.pcm_data_o(rom_data_o),
-		.pcm_ack_o(rom_ack_o),
-		.ram_ce_n(ram_ce_n),
-		.ram_clk(ram_clk),
-		.ram_adv_n(ram_adv_n),
-		.ram_cre(ram_cre),
-		.ram_lb_n(ram_lb_n),
-		.ram_ub_n(ram_ub_n),
-		.ram_wait(ram_wait),
-		.pcm_ce_n(pcm_ce_n),
-		.pcm_rst_n(pcm_rst_n),
-		.mem_oe_n(mem_oe_n),
-		.mem_we_n(mem_we_n),
-		.mem_addr(mem_addr),
-		.mem_data(mem_data)
+		.flash_busy(),
+		.flash_ce_n(flash_ce_n),
+		.flash_rst_n(flash_rst_n),
+		.flash_oe_n(flash_oe_n),
+		.flash_we_n(flash_we_n),
+		.flash_wp_n(flash_wp_n),
+		.flash_ready(flash_ready),
+		.flash_addr(flash_addr),
+		.flash_din(flash_din),
+		.flash_dout(flash_dout),
+		.wbs_clk_i(clk_bus),
+		.wbs_cyc_i(rom_cyc_i),
+		.wbs_stb_i(rom_stb_i),
+		.wbs_addr_i(rom_addr_i),
+		.wbs_cti_i(rom_cti_i),
+		.wbs_bte_i(rom_bte_i),
+		.wbs_sel_i(rom_sel_i),
+		.wbs_we_i(rom_we_i),
+		.wbs_data_i(rom_data_i),
+		.wbs_data_o(rom_data_o),
+		.wbs_ack_o(rom_ack_o)
 		);
 	
 	`else
@@ -499,19 +530,17 @@ module SystemOnFPGA_Nexys3 (
 		);
 	
 	assign
-		ram_ce_n = 1,
-		ram_clk = 0,
-		ram_adv_n = 1,
-		ram_cre = 0,
-		ram_lb_n = 1,
-		ram_ub_n = 1,
-		pcm_ce_n = 1,
-		pcm_rst_n = 1,
-		mem_oe_n = 1,
-		mem_we_n = 1,
-		mem_addr = 0,
-		mem_data = 0;
-	
+		sram_ce_n = 1,
+		sram_ow_n = 1,
+		sram_we_n = 1,
+		sram_addr = 0,
+		sram_data = 0,
+		flash_ce_n = 2'b11,
+		flash_rst_n = 1,
+		flash_oe_n = 1,
+		flash_we_n = 1,
+		flash_addr = 0,
+		flash_dout = 0;
 	`endif
 	
 	// I/O devices
@@ -639,9 +668,9 @@ module SystemOnFPGA_Nexys3 (
 		.clk_base(clk_100m),
 		.h_sync(vga_h_sync),
 		.v_sync(vga_v_sync),
-		.r_color(vga_red),
-		.g_color(vga_green),
-		.b_color(vga_blue),
+		.r_color(vga_red[3:1]),
+		.g_color(vga_green[3:1]),
+		.b_color(vga_blue[3:2]),
 		.wbm_clk_i(clk_bus),
 		.wbm_cyc_o(vram_cyc_o),
 		.wbm_stb_o(vram_stb_o),
@@ -662,6 +691,10 @@ module SystemOnFPGA_Nexys3 (
 		.wbs_data_o(vga_data_o),
 		.wbs_ack_o(vga_ack_o)
 		);
+	assign
+		vga_red[0] = 0,
+		vga_green[0] = 0,
+		vga_blue[1:0] = 0;
 	`else
 	assign
 		vram_cyc_o = 0,
@@ -675,20 +708,21 @@ module SystemOnFPGA_Nexys3 (
 	
 	`ifndef NO_BOARD
 	// board
-	wb_board_nexys3 #(
+	wb_board_anvylsword #(
+		.CLK_FREQ(CLK_FREQ_DEV),
 		.DEV_ADDR_BITS(DEV_SINGAL_ADDR_BITS)
-		) WB_BOARD (
+		) WB_BOARD_ANVYLSWORD (
 		.clk(clk_dev),
 		.rst(1'b0),
 		.switch(switch_buf),
-		.btn_l(btn_l_buf),
-		.btn_r(btn_r_buf),
-		.btn_u(btn_u_buf),
-		.btn_d(btn_d_buf),
-		.btn_s(1'b0),
-		.led(led),
-		.segment(segment),
-		.anode(anode),
+		.btn_x(btn_x_buf),
+		.btn_y(btn_y_buf),
+		.led_clk(led_clk),
+		.led_clr_n(led_clr_n),
+		.led_do(led_do),
+		.seg_clk(seg_clk),
+		.seg_clr_n(seg_clr_n),
+		.seg_do(seg_do),
 		.wbs_clk_i(clk_bus),
 		.wbs_cs_i(board_cs_i),
 		.wbs_addr_i(board_addr_i),
@@ -706,18 +740,21 @@ module SystemOnFPGA_Nexys3 (
 		.interrupt(ir_board)
 		);
 	`else
-	wb_board WB_BOARD (
+	wb_board_anvylsword #(
+		.CLK_FREQ(CLK_FREQ_DEV),
+		.DEV_ADDR_BITS(DEV_SINGAL_ADDR_BITS)
+		) WB_BOARD_ANVYLSWORD (
 		.clk(clk_dev),
 		.rst(1'b0),
-		.switch(8'b0),
-		.btn_l(1'b0),
-		.btn_r(1'b0),
-		.btn_u(1'b0),
-		.btn_d(1'b0),
-		.btn_s(1'b0),
-		.led(led),
-		.segment(segment),
-		.anode(anode),
+		.switch(16'b0),
+		.btn_x(4'b0),
+		.btn_y(4'b0),
+		.led_clk(led_clk),
+		.led_clr_n(led_clr_n),
+		.led_do(led_do),
+		.seg_clk(seg_clk),
+		.seg_clr_n(seg_clr_n),
+		.seg_do(seg_do),
 		.wbs_clk_i(),
 		.wbs_cs_i(),
 		.wbs_addr_i(),
@@ -826,4 +863,20 @@ module SystemOnFPGA_Nexys3 (
 		uart_tx = 1,
 		ir_uart = 0;
 	`endif
+	
+	// Not Used
+	wire tri_led0_r;
+	wire tri_led0_g;
+	wire tri_led0_b;
+	wire tri_led1_r;
+	wire tri_led1_g;
+	wire tri_led1_b;
+	assign
+		tri_led0_r_n = ~tri_led0_r,
+		tri_led0_g_n = ~tri_led0_g,
+		tri_led0_b_n = ~tri_led0_b,
+		tri_led1_r_n = ~tri_led1_r,
+		tri_led1_g_n = ~tri_led1_g,
+		tri_led1_b_n = ~tri_led1_b;
+	
 endmodule

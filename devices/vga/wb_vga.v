@@ -8,7 +8,7 @@
 module wb_vga (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
-	input wire clk_100m,  // 100MHz clock used to generate VGA's clock
+	input wire clk_base,  // base clock used to generate VGA's clock
 	// VGA interfaces
 	output reg h_sync,
 	output reg v_sync,
@@ -63,11 +63,28 @@ module wb_vga (
 	wire h_en_core;
 	wire v_en_core;
 	
-	vga_core VGA_CORE (
+	/*vga_core VGA_CORE (
 		.clk(clk),
 		.rst(rst),
-		.clk_100m(clk_100m),
+		.clk_base(clk_base),
 		.mode_in(reg_mode[3:0]),
+		.vga_clk(vga_clk),
+		.vga_valid(vga_valid),
+		.h_count(h_count_core),
+		.v_count(v_count_core),
+		.p_count(p_count_core),
+		.h_disp_max(h_disp_max),
+		.v_disp_max(v_disp_max),
+		.p_disp_max(p_disp_max),
+		.h_sync(h_sync_core),
+		.v_sync(v_sync_core),
+		.h_en(h_en_core),
+		.v_en(v_en_core)
+		);*/
+	vga_core_640_480_60 VGA_CORE (
+		.clk(clk),
+		.rst(rst),
+		.clk_base(clk_base),
 		.vga_clk(vga_clk),
 		.vga_valid(vga_valid),
 		.h_count(h_count_core),

@@ -5,7 +5,7 @@
  * UART TX part for sending data only.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module uart_tx (
+module uart_core_tx (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire [BAUD_DIV_WIDTH-1:0] baud_div,  // baud rate division, should be 10M/8/baudrate-1

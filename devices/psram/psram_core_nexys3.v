@@ -5,7 +5,7 @@
  * PSRAM core.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module psram_core (
+module psram_core_nexys3 (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire cs,  // chip select

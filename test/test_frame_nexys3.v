@@ -1,7 +1,7 @@
 `include "define.vh"
 
 
-module test_frame (
+module test_frame_nexys3 (
 	// board
 	input wire clk,  // on board clock, 100MHz
 	input wire rst,  // reset button
@@ -46,18 +46,6 @@ module test_frame (
 	output wire uart_tx
 	);
 	
-	// defines
-	// uncomment below lines when corresponding devices are not used
-	//`define NO_LED
-	`define NO_VGA
-	//`define NO_MEMORY
-	`define NO_PCM
-	//`define NO_RAM
-	`define NO_KEYBOARD
-	`define NO_SPI
-	`define NO_UART
-	//`define SIMULATING
-	
 	// clock & reset
 	wire clk_100m, clk_50m, clk_25m, clk_10m;
 	wire clk_sys, clk_bus, clk_cpu, clk_mem, clk_dev;
@@ -82,7 +70,7 @@ module test_frame (
 	wire btn_l_buf, btn_r_buf, btn_u_buf, btn_d_buf, rst_buf;
 	
 	`ifndef SIMULATING
-	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000))
+	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(0))
 		AJ0 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[0]), .sig_o(switch_buf[0])),
 		AJ1 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[1]), .sig_o(switch_buf[1])),
 		AJ2 (.clk(clk_cpu), .rst(1'b0), .sig_i(switch[2]), .sig_o(switch_buf[2])),
@@ -94,7 +82,8 @@ module test_frame (
 		AJL (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_l), .sig_o(btn_l_buf)),
 		AJR (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_r), .sig_o(btn_r_buf)),
 		AJU (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_u), .sig_o(btn_u_buf)),
-		AJD (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_d), .sig_o(btn_d_buf)),
+		AJD (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_d), .sig_o(btn_d_buf));
+	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(1))
 		AJRST (.clk(clk_cpu), .rst(1'b0), .sig_i(rst), .sig_o(rst_buf));
 	`else
 	assign
@@ -110,7 +99,7 @@ module test_frame (
 	wire locked;
 	reg [15:0] rst_count = 16'hFFFF;
 	
-	clk_gen CLK_GEN (
+	clk_gen_nexys3 CLK_GEN (
 		.clk_pad(clk),
 		.clk_100m(clk_100m),
 		.clk_50m(clk_50m),
@@ -125,14 +114,14 @@ module test_frame (
 	end
 	
 	// display
-	wire [15:0] disp_data;
-	wire [3:0] disp_dot;
-	seg_disp SEG_DISP (
+	wire [31:0] disp_data;
+	wire [7:0] disp_dot;
+	seg_disp_nexys3 SEG_DISP (
 		.clk(clk_sys),
 		.rst(1'b0),
 		.en(4'b1111),
-		.data(disp_data),
-		.dot(disp_dot),
+		.data(btn_d_buf ? disp_data[31:16] : disp_data[15:0]),
+		.dot(btn_d_buf ? disp_dot[7:4] : disp_dot[3:0]),
 		.segment(segment),
 		.anode(anode)
 		);
@@ -146,7 +135,7 @@ module test_frame (
 	
 	/*
 	// PSRAM test
-	test_psram #(
+	test_psram_nexys3 #(
 		.CLK_FREQ(CLK_FREQ_MEM)
 		) TEST_PSRAM (
 		.clk(clk_mem),
@@ -154,7 +143,6 @@ module test_frame (
 		.rst(rst_all),
 		.cs(btn_l_buf),
 		.we(btn_r_buf),
-		.high(btn_d_buf),
 		.addr(switch_buf),
 		.data(disp_data),
 		.state(led),
@@ -171,20 +159,20 @@ module test_frame (
 		.ram_din(mem_din),
 		.ram_dout(mem_dout)
 	);
+	assign
+		disp_dot = 0;
 	`define DISPLAY_SIG
-	`define MEMORY_SIG
 	`define RAM_SIG
 	*/
 	/*
 	// PPCM test
-	test_ppcm #(
+	test_ppcm_nexys3 #(
 		.CLK_FREQ(CLK_FREQ_MEM)
 		) TEST_PPCM (
 		.clk(clk_mem),
 		.clk_bus(clk_bus),
 		.rst(rst_all),
 		.cs(btn_l_buf),
-		.high(btn_d_buf),
 		.addr(switch_buf),
 		.data(disp_data),
 		.state(led),
@@ -196,8 +184,9 @@ module test_frame (
 		.pcm_din(mem_din),
 		.pcm_dout(mem_dout)
 		);
+	assign
+		disp_dot = 0;
 	`define DISPLAY_SIG
-	`define MEMORY_SIG
 	`define PCM_SIG
 	*/
 	
@@ -206,11 +195,10 @@ module test_frame (
 		.CLK_FREQ(CLK_FREQ_DEV)
 		) TEST_VGA (
 		.clk(clk_dev),
-		.clk_100m(clk_100m),
+		.clk_base(clk_100m),
 		.clk_bus(clk_bus),
 		.rst(rst_all),
 		.cs(btn_l_buf),
-		.high(btn_d_buf),
 		.mode(switch_buf),
 		.data(disp_data),
 		.state(led),
@@ -220,6 +208,8 @@ module test_frame (
 		.vga_green(vga_green),
 		.vga_blue(vga_blue)
 		);
+	assign
+		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define VGA_SIG
 	
@@ -233,21 +223,44 @@ module test_frame (
 		.rst(rst_all),
 		.cs(btn_l_buf),
 		.we(btn_r_buf),
-		.high(btn_d_buf),
 		.cmd(switch_buf),
 		.data(disp_data),
 		.state(led),
 		.ps2_clk(keyboard_clk),
 		.ps2_dat(keyboard_dat)
 		);
+	assign
+		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define KEYBOARD_SIG
+	*/
+	/*
+	// UART test
+	test_uart #(
+		.CLK_FREQ(CLK_FREQ_DEV)
+		) TEST_UART (
+		.clk(clk_dev),
+		.clk_bus(clk_bus),
+		.rst(rst_all),
+		.cs(btn_l_buf),
+		.we(btn_r_buf),
+		.din(switch_buf),
+		.data(disp_data),
+		.state(led),
+		.uart_rx(uart_rx),
+		.uart_tx(uart_tx)
+		);
+	assign
+		disp_dot = 0;
+	`define DISPLAY_SIG
+	`define UART_SIG
 	*/
 	
 	// default value for signals
 	`ifndef DISPLAY_SIG
 	assign
 		disp_data = 0,
+		disp_dot = 0,
 		led = 0;
 	`endif
 	
@@ -260,16 +273,6 @@ module test_frame (
 		vga_blue = 0;
 	`endif
 	
-	`ifndef MEMORY_SIG
-	assign
-		mem_oe_n = 1,
-		mem_we_n = 1,
-		mem_addr = 0,
-		mem_dout = 0;
-	`define NO_RAM
-	`define NO_PCM
-	`endif
-	
 	`ifndef RAM_SIG
 	assign
 		ram_clk = 0,
@@ -278,15 +281,27 @@ module test_frame (
 		ram_cre = 0,
 		ram_lb_n = 1,
 		ram_ub_n = 1;
+	`else
+		`define MEMORY_SIG
 	`endif
 	
 	`ifndef PCM_SIG
 	assign
 		pcm_ce_n = 1,
 		pcm_rst_n = 1;
+	`else
+		`define MEMORY_SIG
 	`endif
 	
-	`ifndef KEYBOARDB_SIG
+	`ifndef MEMORY_SIG
+	assign
+		mem_oe_n = 1,
+		mem_we_n = 1,
+		mem_addr = 0,
+		mem_dout = 0;
+	`endif
+	
+	`ifndef KEYBOARD_SIG
 	assign
 		keyboard_clk = 1,
 		keyboard_dat = 1;

@@ -6,7 +6,7 @@
  * Used for Nexys3 board as it shares many signal lines for RAM and PCM.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module wb_memory (
+module wb_memory_nexys3 (
 	input wire clk,  // main clock, should be faster than or equal to wishbone clock
 	input wire rst,  // synchronous reset
 	// debug
@@ -69,7 +69,7 @@ module wb_memory (
 	wire [ADDR_BITS-1:1] ram_addr;
 	wire [15:0] ram_din, ram_dout;
 	
-	wb_psram #(
+	wb_psram_nexys3 #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS),
 		.HIGH_ADDR(RAM_HIGH_ADDR),
@@ -110,7 +110,7 @@ module wb_memory (
 	wire [ADDR_BITS-1:1] pcm_addr;
 	wire [15:0] pcm_din, pcm_dout;
 	
-	wb_ppcm #(
+	wb_ppcm_nexys3 #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS),
 		.HIGH_ADDR(PCM_HIGH_ADDR),

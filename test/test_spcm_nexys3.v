@@ -1,15 +1,14 @@
 `include "define.vh"
 
 
-module test_spcm (
+module test_spcm_nexys3 (
 	input wire clk,
 	input wire clk_bus,
 	input wire rst,
 	input wire cs,
 	input wire we,
-	input wire high,
 	input wire [7:0] addr,
-	output wire [15:0] data,
+	output wire [31:0] data,
 	output wire [7:0] state,
 	// SPCM interfaces
 	output wire spcm_cs_n,
@@ -44,7 +43,7 @@ module test_spcm (
 			cs_buf <= 0;
 	end
 	
-	spcm_core #(
+	spcm_core_nexys3 #(
 		.ADDR_BITS(ADDR_BITS)
 		) SPCM_CORE (
 		.clk(clk),
@@ -68,7 +67,7 @@ module test_spcm (
 			data_buf <= dout;
 	end
 	
-	assign data = high ? data_buf[31:16] : data_buf[15:0];
+	assign data = data_buf;
 	assign state = {busy, 5'b0, spcm_cs_n, ack};
 	
 endmodule

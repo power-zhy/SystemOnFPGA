@@ -7,13 +7,12 @@ module test_ps2 (
 	input wire rst,
 	input wire cs,
 	input wire we,
-	input wire high,
 	input wire [7:0] cmd,
-	output wire [15:0] data,
+	output wire [31:0] data,
 	output wire [7:0] state,
 	// PS2 interfaces
-	inout ps2_clk,
-	inout ps2_dat
+	inout wire ps2_clk,
+	inout wire ps2_dat
 	);
 	
 	parameter
@@ -21,6 +20,10 @@ module test_ps2 (
 	
 	wire [7:0] dout;
 	reg [31:0] data_buf;
+	
+	wire tx_busy, rx_busy;
+	wire tx_ack, rx_ack;
+	wire tx_err, rx_err;
 	
 	reg cs_prev;
 	always @(posedge clk) begin
@@ -38,18 +41,6 @@ module test_ps2 (
 			cs_buf <= 1;
 		else if (tx_ack || rx_ack || tx_err || rx_err)
 			cs_buf <= 0;
-	end
-	
-	wire tx_busy, rx_busy;
-	wire tx_ack, rx_ack;
-	wire tx_err, rx_err;
-	wire [3:0] bit_count;
-	reg [3:0] bit_count_buf;
-	always @(posedge clk) begin
-		if (rst)
-			bit_count_buf <= 0;
-		else if (rx_ack || rx_err)
-			bit_count_buf <= bit_count;
 	end
 	
 	ps2_host #(
@@ -90,7 +81,7 @@ module test_ps2 (
 		end
 	end
 	
-	assign data = high ? data_buf[31:16] : data_buf[15:0];
+	assign data = data_buf;
 	assign state = {tx_busy, rx_busy, 2'b0, tx_err_buf, rx_err_buf, tx_ack, rx_ack};
 	
 endmodule

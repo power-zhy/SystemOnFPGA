@@ -2,21 +2,26 @@
 
 
 /**
- * Parallel PCM device with wishbone connection interfaces, including read buffers (read only).
+ * PSRAM device with wishbone connection interfaces, including read/write buffers.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module wb_ppcm (
+module wb_psram_nexys3 (
 	input wire clk,  // main clock, should be faster than or equal to wishbone clock
 	input wire rst,  // synchronous reset
-	output wire pcm_busy,  // busy flag
-	// Parallel PCM interfaces
-	output wire pcm_ce_n,
-	output wire pcm_rst_n,
-	output wire pcm_oe_n,
-	output wire pcm_we_n,
-	output wire [ADDR_BITS-1:1] pcm_addr,
-	input wire [15:0] pcm_din,
-	output wire [15:0] pcm_dout,
+	output wire ram_busy,  // busy flag
+	// PSRAM interfaces
+	output wire ram_clk,
+	output wire ram_ce_n,
+	output wire ram_oe_n,
+	output wire ram_we_n,
+	output wire ram_adv_n,
+	output wire ram_cre,
+	output wire ram_lb_n,
+	output wire ram_ub_n,
+	input wire ram_wait,
+	output wire [ADDR_BITS-1:1] ram_addr,
+	input wire [15:0] ram_din,
+	output wire [15:0] ram_dout,
 	// wishbone slave interfaces
 	input wire wbs_clk_i,
 	input wire wbs_cyc_i,
@@ -34,37 +39,48 @@ module wb_ppcm (
 	parameter
 		CLK_FREQ = 100;  // main clock frequency in MHz
 	parameter
-		ADDR_BITS = 24,  // address length for Parallel PCM
-		HIGH_ADDR = 8'hFF,  // high address value, as the address length of wishbone is larger than device
+		ADDR_BITS = 24,  // address length for PSRAM
+		HIGH_ADDR = 8'h00,  // high address value, as the address length of wishbone is larger than device
 		BUF_ADDR_BITS = 4;  // address length for buffer
 	
 	wire cs;
+	wire we;
 	wire [ADDR_BITS-1:2] addr;
+	wire [3:0] sel;
 	wire burst;
+	wire [31:0] din;
 	wire [31:0] dout;
 	wire busy;
 	wire ack;
 	
 	// core
-	ppcm_core #(
+	psram_core_nexys3 #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS)
-		) PPCM_CORE (
+		) PSRAM_CORE (
 		.clk(clk),
 		.rst(rst),
 		.cs(cs),
+		.we(we),
 		.addr(addr),
+		.sel(sel),
 		.burst(burst),
+		.din(din),
 		.dout(dout),
 		.busy(busy),
 		.ack(ack),
-		.pcm_ce_n(pcm_ce_n),
-		.pcm_rst_n(pcm_rst_n),
-		.pcm_oe_n(pcm_oe_n),
-		.pcm_we_n(pcm_we_n),
-		.pcm_addr(pcm_addr),
-		.pcm_din(pcm_din),
-		.pcm_dout(pcm_dout)
+		.ram_ce_n(ram_ce_n),
+		.ram_clk(ram_clk),
+		.ram_oe_n(ram_oe_n),
+		.ram_we_n(ram_we_n),
+		.ram_adv_n(ram_adv_n),
+		.ram_cre(ram_cre),
+		.ram_lb_n(ram_lb_n),
+		.ram_ub_n(ram_ub_n),
+		.ram_wait(ram_wait),
+		.ram_addr(ram_addr),
+		.ram_din(ram_din),
+		.ram_dout(ram_dout)
 		);
 	
 	// adapter
@@ -74,27 +90,27 @@ module wb_ppcm (
 		.BUF_ADDR_BITS(BUF_ADDR_BITS),
 		.BURST_CTI(3'b010),
 		.BURST_BTE(2'b00)
-		) PPCM_ADAPTER (
+		) PSRAM_ADAPTER (
 		.rst(rst),
-		.busy(pcm_busy),
+		.busy(ram_busy),
 		.wbs_clk_i(wbs_clk_i),
 		.wbs_cyc_i(wbs_cyc_i),
 		.wbs_stb_i(wbs_stb_i),
 		.wbs_addr_i(wbs_addr_i),
 		.wbs_cti_i(wbs_cti_i),
 		.wbs_bte_i(wbs_bte_i),
-		.wbs_sel_i(4'b1111),
-		.wbs_we_i(1'b0),
-		.wbs_data_i(32'b0),
+		.wbs_sel_i(wbs_sel_i),
+		.wbs_we_i(wbs_we_i),
+		.wbs_data_i(wbs_data_i),
 		.wbs_data_o(wbs_data_o),
 		.wbs_ack_o(wbs_ack_o),
 		.mem_clk(clk),
 		.mem_cs(cs),
-		.mem_we(),
+		.mem_we(we),
 		.mem_addr(addr),
-		.mem_sel(),
+		.mem_sel(sel),
 		.mem_burst(burst),
-		.mem_din(),
+		.mem_din(din),
 		.mem_dout(dout),
 		.mem_busy(busy),
 		.mem_ack(ack)

@@ -1,29 +1,30 @@
 `include "define.vh"
 
 
-module test_ppcm (
+module test_flash_anvylsword (
 	input wire clk,
 	input wire clk_bus,
 	input wire rst,
 	input wire cs,
 	input wire we,
-	input wire high,
 	input wire [7:0] addr,
-	output wire [15:0] data,
+	output wire [31:0] data,
 	output wire [7:0] state,
-	// PPCM interfaces
-	output wire pcm_ce_n,
-	output wire pcm_rst_n,
-	output wire pcm_oe_n,
-	output wire pcm_we_n,
-	output wire [ADDR_BITS-1:1] pcm_addr,
-	input wire [15:0] pcm_din,
-	output wire [15:0] pcm_dout
+	// flash interfaces
+	output wire [1:0] flash_ce_n,
+	output wire flash_rst_n,
+	output wire flash_oe_n,
+	output wire flash_we_n,
+	output wire flash_wp_n,
+	input wire [1:0] flash_ready,
+	output wire [ADDR_BITS-1:2] flash_addr,
+	input wire [31:0] flash_din,
+	output wire [31:0] flash_dout
 	);
 	
 	parameter
 		CLK_FREQ = 100,
-		ADDR_BITS = 24;
+		ADDR_BITS = 25;
 	
 	wire busy, ack;
 	wire [31:0] dout;
@@ -47,10 +48,10 @@ module test_ppcm (
 			cs_buf <= 0;
 	end
 	
-	/*ppcm_core #(
+	/*flash_core #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS)
-		) PPCM_CORE (
+		) FLASH_CORE (
 		.clk(clk),
 		.rst(rst),
 		.cs(~cs_prev & cs),
@@ -59,31 +60,35 @@ module test_ppcm (
 		.dout(dout),
 		.busy(busy),
 		.ack(ack),
-		.pcm_ce_n(pcm_ce_n),
-		.pcm_rst_n(pcm_rst_n),
-		.pcm_oe_n(pcm_oe_n),
-		.pcm_we_n(pcm_we_n),
-		.pcm_addr(pcm_addr),
-		.pcm_din(pcm_din),
-		.pcm_dout(pcm_dout)
+		.flash_ce_n(flash_ce_n),
+		.flash_rst_n(flash_rst_n),
+		.flash_oe_n(flash_oe_n),
+		.flash_we_n(flash_we_n),
+		.flash_wp_n(flash_wp_n),
+		.flash_ready(flash_ready),
+		.flash_addr(flash_addr),
+		.flash_din(flash_din),
+		.flash_dout(flash_dout)
 		);*/
 	
-	wb_ppcm #(
+	wb_flash_anvylsword #(
 		.CLK_FREQ(CLK_FREQ),
 		.ADDR_BITS(ADDR_BITS),
-		.HIGH_ADDR(8'h00),
+		.HIGH_ADDR(0),
 		.BUF_ADDR_BITS(4)
-		) WB_PPCM (
+		) WB_FLASH (
 		.clk(clk),
 		.rst(rst),
-		.pcm_busy(busy),
-		.pcm_ce_n(pcm_ce_n),
-		.pcm_rst_n(pcm_rst_n),
-		.pcm_oe_n(pcm_oe_n),
-		.pcm_we_n(pcm_we_n),
-		.pcm_addr(pcm_addr),
-		.pcm_din(pcm_din),
-		.pcm_dout(pcm_dout),
+		.flash_busy(busy),
+		.flash_ce_n(flash_ce_n),
+		.flash_rst_n(flash_rst_n),
+		.flash_oe_n(flash_oe_n),
+		.flash_we_n(flash_we_n),
+		.flash_wp_n(flash_wp_n),
+		.flash_ready(flash_ready),
+		.flash_addr(flash_addr),
+		.flash_din(flash_din),
+		.flash_dout(flash_dout),
 		.wbs_clk_i(clk_bus),
 		.wbs_cyc_i(cs_buf),
 		.wbs_stb_i(cs_buf),
@@ -104,7 +109,7 @@ module test_ppcm (
 			data_buf <= dout;
 	end
 	
-	assign data = high ? data_buf[31:16] : data_buf[15:0];
-	assign state = {busy, pcm_ce_n, pcm_rst_n, pcm_oe_n, pcm_we_n, 2'b0, ack};
+	assign data = data_buf;
+	assign state = {busy, flash_ce_n[0], flash_rst_n, flash_oe_n, flash_we_n, flash_ready[0], flash_ready[1], ack};
 	
 endmodule

@@ -8,7 +8,16 @@ def bin2hex(bin_path, hex_path):
 
 if __name__ == "__main__":
 	import sys
-	if (len(sys.argv) != 3):
+	if (len(sys.argv) < 2):
 		print("Usage: {} bin_path hex_path".format(sys.argv[0]))
+	src = sys.argv[1]
+	if (len(sys.argv) < 3):
+		index = src.rfind('.')
+		if (index >= 0):
+			dst = src[:index] + ".hex"
+		else:
+			dst = src + ".hex"
 	else:
-		bin2hex(sys.argv[1], sys.argv[2])
+		dst = sys.argv[2]
+	bin2hex(src, dst)
+	
