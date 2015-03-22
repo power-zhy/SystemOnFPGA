@@ -5,7 +5,7 @@
 
 function integer GET_WIDTH;  // get width in bits for a constant
 	input [31:0] data;
-	/*begin
+	begin
 		if (data[31]) GET_WIDTH=32;
 		else if (data[30]) GET_WIDTH=31;
 		else if (data[29]) GET_WIDTH=30;
@@ -39,8 +39,8 @@ function integer GET_WIDTH;  // get width in bits for a constant
 		else if (data[1]) GET_WIDTH=2;
 		else if (data[0]) GET_WIDTH=1;
 		else GET_WIDTH=1;
-	end*/
-	begin case(1):
+	end
+	/*begin case(1):
 		data[31]: GET_WIDTH=32;
 		data[30]: GET_WIDTH=31;
 		data[29]: GET_WIDTH=30;
@@ -74,5 +74,5 @@ function integer GET_WIDTH;  // get width in bits for a constant
 		data[1]: GET_WIDTH=2;
 		data[0]: GET_WIDTH=1;
 	endcase
-	end
+	end*/
 endfunction

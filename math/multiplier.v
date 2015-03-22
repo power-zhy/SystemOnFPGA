@@ -72,9 +72,9 @@ module multiplier (
 	
 	always @(posedge clk) begin
 		if (rst)
-			state <= #`DELAY 0;
+			state <= 0;
 		else
-			state <= #`DELAY next_state;
+			state <= next_state;
 	end
 	
 	always @(*) begin

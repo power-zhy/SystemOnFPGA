@@ -68,9 +68,9 @@ module divider (
 	
 	always @(posedge clk) begin
 		if (rst)
-			state <= #`DELAY 0;
+			state <= 0;
 		else
-			state <= #`DELAY next_state;
+			state <= next_state;
 	end
 	
 	assign
@@ -78,24 +78,24 @@ module divider (
 	
 	always @(posedge clk) begin
 		if (rst) begin
-			dsor <= #`DELAY 0;
-			neg_quot <= #`DELAY 0;
-			neg_rem <= #`DELAY 0;
-			result <= #`DELAY 0;
-			counter <= #`DELAY 0;
-			last <= #`DELAY 0;
+			dsor <= 0;
+			neg_quot <= 0;
+			neg_rem <= 0;
+			result <= 0;
+			counter <= 0;
+			last <= 0;
 		end
 		else if (load) begin
-			dsor <= #`DELAY (sign & divisor[DATA_BITS-1]) ? (~divisor + 1'h1) : divisor;
-			neg_quot <= #`DELAY sign ? divisor[DATA_BITS-1] ^ dividend[DATA_BITS-1] : 1'b0;
-			neg_rem <= #`DELAY sign ? dividend[DATA_BITS-1] : 1'b0;
-			result <= #`DELAY {{DATA_BITS-1{1'b0}}, (sign&dividend[DATA_BITS-1])?(~dividend+1'h1):dividend, 1'b0};
-			counter <= #`DELAY 0;
-			last <= #`DELAY 0;
+			dsor <= (sign & divisor[DATA_BITS-1]) ? (~divisor + 1'h1) : divisor;
+			neg_quot <= sign ? divisor[DATA_BITS-1] ^ dividend[DATA_BITS-1] : 1'b0;
+			neg_rem <= sign ? dividend[DATA_BITS-1] : 1'b0;
+			result <= {{DATA_BITS-1{1'b0}}, (sign&dividend[DATA_BITS-1])?(~dividend+1'h1):dividend, 1'b0};
+			counter <= 0;
+			last <= 0;
 		end
 		else if (shift) begin
-			{last, result} <= #`DELAY temp[DATA_BITS-1] ? {result[RESULT_BITS-1:0], 1'b0} : {temp[DATA_BITS-1:0], result[DATA_BITS-1:0], 1'b1};
-			counter <= #`DELAY counter + 1'h1;
+			{last, result} <= temp[DATA_BITS-1] ? {result[RESULT_BITS-1:0], 1'b0} : {temp[DATA_BITS-1:0], result[DATA_BITS-1:0], 1'b1};
+			counter <= counter + 1'h1;
 		end
 	end
 	

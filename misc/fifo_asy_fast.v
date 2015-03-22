@@ -5,7 +5,7 @@
  * Asynchronous FIFO, read data is ready without read enable signal, and would be changed at the next positive edge of read clock after it.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module fifo_asy (
+module fifo_asy_fast (
 	input wire rst,  // synchronous reset
 	// data writing
 	input wire clk_w,  // write clock

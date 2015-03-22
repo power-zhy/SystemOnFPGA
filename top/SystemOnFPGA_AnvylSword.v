@@ -5,7 +5,7 @@
  * System On FPGA, top module for AnvylSword board.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module SystemOnFPGA_Nexys3 (
+module SystemOnFPGA_AnvylSword (
 	// board
 	input wire clk,  // on board clock, 100MHz
 	input wire rst_n,  // reset button
