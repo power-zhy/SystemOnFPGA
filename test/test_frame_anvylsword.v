@@ -251,7 +251,7 @@ module test_frame_anvylsword (
 		vga_blue[1:0] = 0;
 	`define VGA_SIG
 	*/
-	
+	/*
 	// KEYBOARD test
 	test_ps2 #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -268,8 +268,8 @@ module test_frame_anvylsword (
 		.ps2_dat(keyboard_dat)
 		);
 	`define KEYBOARD_SIG
+	*/
 	
-	/*
 	test_uart #(
 		.CLK_FREQ(CLK_FREQ_DEV)
 		) TEST_UART (
@@ -285,7 +285,7 @@ module test_frame_anvylsword (
 		.uart_tx(uart_tx)
 		);
 	`define UART_SIG
-	*/
+	
 	
 	// default value for signals
 	`ifndef VGA_SIG

@@ -15,6 +15,7 @@ module wb_dev_adapter (
 	input wire [31:0] wbs_data_i,
 	output reg [31:0] wbs_data_o,
 	output reg wbs_ack_o,
+	output reg wbs_err_o,
 	// slave device 0
 	output reg d0_cs_o,
 	output reg [SINGLE_ADDR_BITS-1:2] d0_addr_o,
@@ -229,6 +230,7 @@ module wb_dev_adapter (
 	always @(*) begin
 		wbs_data_o = 0;
 		wbs_ack_o = 0;
+		wbs_err_o = 0;
 		if (wbs_cyc_i & wbs_stb_i) case (wbs_addr_i[TOTAL_ADDR_BITS-1:SINGLE_ADDR_BITS])
 			0: begin
 				wbs_data_o = d0_data_i;
@@ -269,6 +271,9 @@ module wb_dev_adapter (
 			9: begin
 				wbs_data_o = d9_data_i;
 				wbs_ack_o = d9_ack_i;
+			end
+			default: begin
+				wbs_err_o = 1;
 			end
 		endcase
 	end

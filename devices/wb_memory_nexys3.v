@@ -26,6 +26,7 @@ module wb_memory_nexys3 (
 	input wire [31:0] ram_data_i,
 	output wire [31:0] ram_data_o,
 	output wire ram_ack_o,
+	output wire ram_err_o,
 	// wishbone slave - PCM
 	input wire pcm_clk_i,
 	input wire pcm_cyc_i,
@@ -38,6 +39,7 @@ module wb_memory_nexys3 (
 	input wire [31:0] pcm_data_i,
 	output wire [31:0] pcm_data_o,
 	output wire pcm_ack_o,
+	output wire pcm_err_o,
 	// memory interfaces
 	output wire ram_ce_n,
 	output wire ram_clk,
@@ -100,7 +102,8 @@ module wb_memory_nexys3 (
 		.wbs_we_i(ram_we_i),
 		.wbs_data_i(ram_data_i),
 		.wbs_data_o(ram_data_o),
-		.wbs_ack_o(ram_ack_o)
+		.wbs_ack_o(ram_ack_o),
+		.wbs_err_o(ram_err_o)
 		);
 	
 	// PCM
@@ -136,7 +139,8 @@ module wb_memory_nexys3 (
 		.wbs_we_i(pcm_we_i),
 		.wbs_data_i(pcm_data_i),
 		.wbs_data_o(pcm_data_o),
-		.wbs_ack_o(pcm_ack_o)
+		.wbs_ack_o(pcm_ack_o),
+		.wbs_err_o(pcm_err_o)
 		);
 	
 	// control

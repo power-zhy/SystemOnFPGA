@@ -28,7 +28,8 @@ module wb_ppcm_nexys3 (
 	input wire wbs_we_i,
 	input wire [31:0] wbs_data_i,
 	output wire [31:0] wbs_data_o,
-	output wire wbs_ack_o
+	output wire wbs_ack_o,
+	output wire wbs_err_o
 	);
 	
 	parameter
@@ -88,6 +89,7 @@ module wb_ppcm_nexys3 (
 		.wbs_data_i(32'b0),
 		.wbs_data_o(wbs_data_o),
 		.wbs_ack_o(wbs_ack_o),
+		.wbs_err_o(wbs_err_o),
 		.mem_clk(clk),
 		.mem_cs(cs),
 		.mem_we(),

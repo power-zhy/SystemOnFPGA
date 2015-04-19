@@ -5,7 +5,7 @@
  * Controller for MIPS 5-stage pipelined CPU.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module controller (/*AUTOARG*/
+module controller (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire ctrl_en,  // controller enable signal

@@ -87,7 +87,7 @@ module datapath (
 	reg mem_ren_exe, mem_ren_mem;
 	reg mem_wen_exe, mem_wen_mem;
 	reg [1:0] wb_data_src_exe, wb_data_src_mem, wb_data_src_wb;
-	reg wb_wen_exe, wb_wen_mem, wb_wen_wb;
+	reg wb_wen_exe, wb_wen_mem;
 	
 	// IF signals
 	wire [31:0] inst_addr_next;

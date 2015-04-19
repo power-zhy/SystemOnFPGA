@@ -27,6 +27,7 @@ module wb_mips (
 	input wire [31:0] icmu_data_i,
 	output wire [31:0] icmu_data_o,
 	input wire icmu_ack_i,
+	input wire icmu_err_i,
 	// wishbone master interfaces for DCMU
 	input wire dcmu_clk_i,
 	output wire dcmu_cyc_o,
@@ -39,6 +40,7 @@ module wb_mips (
 	input wire [31:0] dcmu_data_i,
 	output wire [31:0] dcmu_data_o,
 	input wire dcmu_ack_i,
+	input wire dcmu_err_i,
 	// interrupt interfaces
 	input wire [30:1] ir_map,  // device interrupt signals
 	output wire wd_rst  // watch dog reset, must not affect the global reset signal
@@ -70,7 +72,7 @@ module wb_mips (
 	wire [31:PAGE_ADDR_BITS] inst_addr_logical, inst_addr_physical;
 	wire [PAGE_ADDR_BITS-1:0] inst_addr_page;
 	wire [31:0] inst_data;
-	wire inst_unalign, inst_page_fault;
+	wire inst_unalign, inst_bus_err, inst_page_fault;
 	wire inst_unauth_user, inst_unauth_exec;
 	wire ic_en, ic_lock;
 	wire ic_inv;
@@ -88,7 +90,7 @@ module wb_mips (
 	wire [PAGE_ADDR_BITS-1:0] mem_addr_page;
 	reg [31:0] mem_data_r;
 	wire [31:0] mem_data_w;
-	wire mem_unalign, mem_page_fault;
+	wire mem_unalign, mem_bus_err, mem_page_fault;
 	wire mem_unauth_user, mem_unauth_write;
 	wire dc_en, dc_lock;
 	wire dc_inv;
@@ -129,6 +131,7 @@ module wb_mips (
 		.inst_addr({inst_addr_logical, inst_addr_page}),
 		.inst_data(inst_data),
 		.inst_unalign(inst_unalign),
+		.inst_bus_err(inst_bus_err),
 		.inst_page_fault(inst_page_fault),
 		.inst_unauth_user(inst_unauth_user),
 		.inst_unauth_exec(inst_unauth_exec),
@@ -143,6 +146,7 @@ module wb_mips (
 		.mem_dout(mem_data_w),
 		.mem_din(mem_data_r),
 		.mem_unalign(mem_unalign),
+		.mem_bus_err(mem_bus_err),
 		.mem_page_fault(mem_page_fault),
 		.mem_unauth_user(mem_unauth_user),
 		.mem_unauth_write(mem_unauth_write),
@@ -253,6 +257,7 @@ module wb_mips (
 		.lock(ic_lock),
 		.stall(icache_stall),
 		.unalign(inst_unalign),
+		.bus_err(inst_bus_err),
 		.wbm_clk_i(icmu_clk_i),
 		.wbm_cyc_o(icmu_cyc_o),
 		.wbm_stb_o(icmu_stb_o),
@@ -263,7 +268,8 @@ module wb_mips (
 		.wbm_we_o(icmu_we_o),
 		.wbm_data_i(icmu_data_i),
 		.wbm_data_o(icmu_data_o),
-		.wbm_ack_i(icmu_ack_i)
+		.wbm_ack_i(icmu_ack_i),
+		.wbm_err_i(icmu_err_i)
 		);
 	`else
 	wb_cpu_conn ICMU (
@@ -280,6 +286,7 @@ module wb_mips (
 		.lock(ic_lock),
 		.stall(icache_stall),
 		.unalign(inst_unalign),
+		.bus_err(inst_bus_err),
 		.wbm_clk_i(icmu_clk_i),
 		.wbm_cyc_o(icmu_cyc_o),
 		.wbm_stb_o(icmu_stb_o),
@@ -290,7 +297,8 @@ module wb_mips (
 		.wbm_we_o(icmu_we_o),
 		.wbm_data_i(icmu_data_i),
 		.wbm_data_o(icmu_data_o),
-		.wbm_ack_i(icmu_ack_i)
+		.wbm_ack_i(icmu_ack_i),
+		.wbm_err_i(icmu_err_i)
 		);
 	`endif
 	
@@ -371,6 +379,7 @@ module wb_mips (
 		.lock(dcmu_lock),
 		.stall(dcache_stall),
 		.unalign(mem_unalign),
+		.bus_err(mem_bus_err),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),
 		.wbm_stb_o(dcmu_stb_o),
@@ -381,7 +390,8 @@ module wb_mips (
 		.wbm_we_o(dcmu_we_o),
 		.wbm_data_i(dcmu_data_i),
 		.wbm_data_o(dcmu_data_o),
-		.wbm_ack_i(dcmu_ack_i)
+		.wbm_ack_i(dcmu_ack_i),
+		.wbm_err_i(dcmu_err_i)
 		);
 	`else
 	wb_cpu_conn DCMU (
@@ -398,6 +408,7 @@ module wb_mips (
 		.lock(dcmu_lock),
 		.stall(dcache_stall),
 		.unalign(mem_unalign),
+		.bus_err(mem_bus_err),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),
 		.wbm_stb_o(dcmu_stb_o),
@@ -408,7 +419,8 @@ module wb_mips (
 		.wbm_we_o(dcmu_we_o),
 		.wbm_data_i(dcmu_data_i),
 		.wbm_data_o(dcmu_data_o),
-		.wbm_ack_i(dcmu_ack_i)
+		.wbm_ack_i(dcmu_ack_i),
+		.wbm_err_i(dcmu_err_i)
 		);
 	`endif
 	

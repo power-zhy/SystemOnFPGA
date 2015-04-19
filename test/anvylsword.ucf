@@ -44,10 +44,10 @@ NET "switch[13]"			LOC = AE13      | IOSTANDARD = LVCMOS15 ;
 NET "switch[14]"			LOC = AF13      | IOSTANDARD = LVCMOS15 ;
 NET "switch[15]"			LOC = AF10      | IOSTANDARD = LVCMOS15 ;
 
-#NET "uart_rx"				LOC = L25       | IOSTANDARD = LVCMOS33 | PULLUP ;
-#NET "uart_tx"				LOC = P24       | IOSTANDARD = LVCMOS33 | PULLUP ;
-NET "uart_rx"				LOC = W21       | IOSTANDARD = LVCMOS33 | PULLUP ;
-NET "uart_tx"				LOC = V21       | IOSTANDARD = LVCMOS33 | PULLUP ;
+NET "uart_rx"				LOC = L25       | IOSTANDARD = LVCMOS33 | PULLUP ;
+NET "uart_tx"				LOC = P24       | IOSTANDARD = LVCMOS33 | PULLUP ;
+#NET "uart_rx"				LOC = W21       | IOSTANDARD = LVCMOS33 | PULLUP ;
+#NET "uart_tx"				LOC = V21       | IOSTANDARD = LVCMOS33 | PULLUP ;
 
 NET "keyboard_clk"			LOC = P25       | IOSTANDARD = LVCMOS33 | PULLUP ;
 NET "keyboard_dat"			LOC = N19       | IOSTANDARD = LVCMOS33 | PULLUP ;

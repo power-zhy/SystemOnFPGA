@@ -91,6 +91,7 @@ module SystemOnFPGA_Nexys3 (
 	wire [31:0] vram_data_i;
 	wire [31:0] vram_data_o;
 	wire vram_ack_i;
+	wire vram_err_i;
 	
 	// wishbone master - ICMU
 	wire icmu_cyc_o;
@@ -103,6 +104,7 @@ module SystemOnFPGA_Nexys3 (
 	wire [31:0] icmu_data_i;
 	wire [31:0] icmu_data_o;
 	wire icmu_ack_i;
+	wire icmu_err_i;
 	
 	// wishbone master - DCMU
 	wire dcmu_cyc_o;
@@ -115,6 +117,7 @@ module SystemOnFPGA_Nexys3 (
 	wire [31:0] dcmu_data_i;
 	wire [31:0] dcmu_data_o;
 	wire dcmu_ack_i;
+	wire dcmu_err_i;
 	
 	// wishbone slave - RAM
 	wire ram_cyc_i;
@@ -127,6 +130,7 @@ module SystemOnFPGA_Nexys3 (
 	wire [31:0] ram_data_o;
 	wire [31:0] ram_data_i;
 	wire ram_ack_o;
+	wire ram_err_o;
 	
 	// wishbone slave - ROM
 	wire rom_cyc_i;
@@ -139,6 +143,7 @@ module SystemOnFPGA_Nexys3 (
 	wire [31:0] rom_data_o;
 	wire [31:0] rom_data_i;
 	wire rom_ack_o;
+	wire rom_err_o;
 	
 	// wishbone slave - I/O devices
 	wire dev_cyc_i;
@@ -151,6 +156,7 @@ module SystemOnFPGA_Nexys3 (
 	wire [31:0] dev_data_o;
 	wire [31:0] dev_data_i;
 	wire dev_ack_o;
+	wire dev_err_o;
 	
 	// peripheral wishbone - VGA
 	wire vga_cs_i;
@@ -307,6 +313,7 @@ module SystemOnFPGA_Nexys3 (
 		.m0_data_o(vram_data_i),
 		.m0_data_i(vram_data_o),
 		.m0_ack_o(vram_ack_i),
+		.m0_err_o(vram_err_i),
 		.m1_cyc_i(icmu_cyc_o),
 		.m1_stb_i(icmu_stb_o),
 		.m1_addr_i(icmu_addr_o),
@@ -317,6 +324,7 @@ module SystemOnFPGA_Nexys3 (
 		.m1_data_o(icmu_data_i),
 		.m1_data_i(icmu_data_o),
 		.m1_ack_o(icmu_ack_i),
+		.m1_err_o(icmu_err_i),
 		.m2_cyc_i(dcmu_cyc_o),
 		.m2_stb_i(dcmu_stb_o),
 		.m2_addr_i(dcmu_addr_o),
@@ -327,6 +335,7 @@ module SystemOnFPGA_Nexys3 (
 		.m2_data_o(dcmu_data_i),
 		.m2_data_i(dcmu_data_o),
 		.m2_ack_o(dcmu_ack_i),
+		.m2_err_o(dcmu_err_i),
 		.m3_cyc_i(1'b0),
 		.m3_stb_i(1'b0),
 		.m3_addr_i(),
@@ -337,6 +346,7 @@ module SystemOnFPGA_Nexys3 (
 		.m3_data_o(),
 		.m3_data_i(),
 		.m3_ack_o(),
+		.m3_err_o(),
 		.s0_cyc_o(ram_cyc_i),
 		.s0_stb_o(ram_stb_i),
 		.s0_addr_o(ram_addr_i),
@@ -347,6 +357,7 @@ module SystemOnFPGA_Nexys3 (
 		.s0_data_i(ram_data_o),
 		.s0_data_o(ram_data_i),
 		.s0_ack_i(ram_ack_o),
+		.s0_err_i(ram_err_o),
 		.s1_cyc_o(rom_cyc_i),
 		.s1_stb_o(rom_stb_i),
 		.s1_addr_o(rom_addr_i),
@@ -357,6 +368,7 @@ module SystemOnFPGA_Nexys3 (
 		.s1_data_i(rom_data_o),
 		.s1_data_o(rom_data_i),
 		.s1_ack_i(rom_ack_o),
+		.s1_err_i(rom_err_o),
 		.s2_cyc_o(dev_cyc_i),
 		.s2_stb_o(dev_stb_i),
 		.s2_addr_o(dev_addr_i),
@@ -366,7 +378,8 @@ module SystemOnFPGA_Nexys3 (
 		.s2_we_o(dev_we_i),
 		.s2_data_i(dev_data_o),
 		.s2_data_o(dev_data_i),
-		.s2_ack_i(dev_ack_o)
+		.s2_ack_i(dev_ack_o),
+		.s2_err_i(dev_err_o)
 		);
 	
 	// CPU
@@ -396,6 +409,7 @@ module SystemOnFPGA_Nexys3 (
 		.icmu_data_i(icmu_data_i),
 		.icmu_data_o(icmu_data_o),
 		.icmu_ack_i(icmu_ack_i),
+		.icmu_err_i(icmu_err_i),
 		.dcmu_clk_i(clk_bus),
 		.dcmu_cyc_o(dcmu_cyc_o),
 		.dcmu_stb_o(dcmu_stb_o),
@@ -407,6 +421,7 @@ module SystemOnFPGA_Nexys3 (
 		.dcmu_data_i(dcmu_data_i),
 		.dcmu_data_o(dcmu_data_o),
 		.dcmu_ack_i(dcmu_ack_i),
+		.dcmu_err_i(dcmu_err_i),
 		.ir_map(ir_map),
 		.wd_rst(wd_rst)
 		);
@@ -437,6 +452,7 @@ module SystemOnFPGA_Nexys3 (
 		.ram_data_i(ram_data_i),
 		.ram_data_o(ram_data_o),
 		.ram_ack_o(ram_ack_o),
+		.ram_err_o(ram_err_o),
 		.pcm_clk_i(clk_bus),
 		.pcm_cyc_i(rom_cyc_i),
 		.pcm_stb_i(rom_stb_i),
@@ -448,6 +464,7 @@ module SystemOnFPGA_Nexys3 (
 		.pcm_data_i(rom_data_i),
 		.pcm_data_o(rom_data_o),
 		.pcm_ack_o(rom_ack_o),
+		.pcm_err_o(rom_err_o),
 		.ram_ce_n(ram_ce_n),
 		.ram_clk(ram_clk),
 		.ram_adv_n(ram_adv_n),
@@ -478,7 +495,8 @@ module SystemOnFPGA_Nexys3 (
 		.wbs_we_i(ram_we_i),
 		.wbs_data_i(ram_data_i),
 		.wbs_data_o(ram_data_o),
-		.wbs_ack_o(ram_ack_o)
+		.wbs_ack_o(ram_ack_o),
+		.wbs_err_o(ram_err_o)
 		);
 	
 	rom #(
@@ -495,7 +513,8 @@ module SystemOnFPGA_Nexys3 (
 		.wbs_we_i(rom_we_i),
 		.wbs_data_i(rom_data_i),
 		.wbs_data_o(rom_data_o),
-		.wbs_ack_o(rom_ack_o)
+		.wbs_ack_o(rom_ack_o),
+		.wbs_err_o(rom_err_o)
 		);
 	
 	assign
@@ -532,6 +551,7 @@ module SystemOnFPGA_Nexys3 (
 		.wbs_data_i(dev_data_i),
 		.wbs_data_o(dev_data_o),
 		.wbs_ack_o(dev_ack_o),
+		.wbs_err_o(dev_err_o),
 		.d0_cs_o(),
 		.d0_addr_o(),
 		.d0_sel_o(),

@@ -21,6 +21,7 @@ module wb_cmu (
 	input wire lock,  // keep current data to avoid process repeating
 	output reg stall,  // stall other components when CMU is busy
 	output reg unalign,  // address unaligned error
+	output reg bus_err,  // bus error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
 	output reg wbm_cyc_o,
@@ -32,7 +33,8 @@ module wb_cmu (
 	output reg wbm_we_o,
 	input wire [31:0] wbm_data_i,
 	output reg [31:0] wbm_data_o,
-	input wire wbm_ack_i
+	input wire wbm_ack_i,
+	input wire wbm_err_i
 	);
 	
 	`include "function.vh"
@@ -167,7 +169,8 @@ module wb_cmu (
 		S_UNCACHE = 5,  // deal with data which do not go through cache
 		S_UNCACHE_LOCK = 6,  // lock on current state to avoid read memory twice
 		S_INVALID = 7,  // invalid all lines in cache, write dirty data back to memory
-		S_INVALID_WAIT = 8;  // wait one clock to prepare new bus request
+		S_INVALID_WAIT = 8,  // wait one clock to prepare new bus request
+		S_ERROR = 9;  // error occurred
 	
 	reg [3:0] state = 0;
 	reg [3:0] next_state;
@@ -201,6 +204,8 @@ module wb_cmu (
 					next_word_count = word_count;
 				if (wbm_ack_i && word_count == {LINE_WORDS_WIDTH{1'b1}})
 					next_state = S_BACK_WAIT;
+				else if (wbm_err_i)
+					next_state = S_ERROR;
 				else
 					next_state = S_BACK;
 			end
@@ -215,6 +220,8 @@ module wb_cmu (
 					next_word_count = word_count;
 				if (wbm_ack_i && word_count == {LINE_WORDS_WIDTH{1'b1}})
 					next_state = S_FILL_WAIT;
+				else if (wbm_err_i)
+					next_state = S_ERROR;
 				else
 					next_state = S_FILL;
 			end
@@ -225,6 +232,8 @@ module wb_cmu (
 			S_UNCACHE: begin
 				if (wbm_ack_i)
 					next_state = S_UNCACHE_LOCK;
+				else if (wbm_err_i)
+					next_state = S_ERROR;
 				else
 					next_state = S_UNCACHE;
 			end
@@ -241,6 +250,8 @@ module wb_cmu (
 					next_word_count = word_count;
 				if (wbm_ack_i && word_count == {LINE_WORDS_WIDTH{1'b1}})
 					next_state = S_INVALID_WAIT;
+				else if (wbm_err_i)
+					next_state = S_ERROR;
 				else
 					next_state = S_INVALID;
 			end
@@ -250,6 +261,9 @@ module wb_cmu (
 					next_state = S_INVALID;
 				else
 					next_state = S_IDLE;
+			end
+			S_ERROR: begin
+				next_state = S_IDLE;
 			end
 		endcase
 	end
@@ -389,9 +403,11 @@ module wb_cmu (
 	// stall
 	always @(*) begin
 		stall = 0;
+		bus_err = 0;
 		if (~suspend) case (next_state)
 			S_IDLE: stall = 0;
 			S_UNCACHE_LOCK: stall = wbm_cyc_o & wbm_ack_i;
+			S_ERROR: bus_err = 1;
 			default: stall = 1;
 		endcase
 	end

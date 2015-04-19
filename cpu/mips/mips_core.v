@@ -26,6 +26,7 @@ module mips_core (
 	output wire [31:0] inst_addr,  // address of instruction needed
 	input wire [31:0] inst_data,  // instruction fetched
 	input wire inst_unalign,  // instruction address unaligned exception
+	input wire inst_bus_err,  // instruction bus read error
 	input wire inst_page_fault,  // instruction page fault exception
 	input wire inst_unauth_user,  // instruction access not authorized for user mode exception
 	input wire inst_unauth_exec,  // instruction execution not authorized exception
@@ -41,6 +42,7 @@ module mips_core (
 	output wire [31:0] mem_dout,  // data writing to memory
 	input wire [31:0] mem_din,  // data read from memory
 	input wire mem_unalign,  // memory address unaligned exception
+	input wire mem_bus_err,  // memory bus read/write error
 	input wire mem_page_fault,  // data page fault exception
 	input wire mem_unauth_user,  // memory access not authorized for user mode exception
 	input wire mem_unauth_write,  // memory write not authorized exception
@@ -236,6 +238,8 @@ module mips_core (
 		.mem_unauth_write(mem_unauth_write),
 		.inst_unalign(inst_unalign),
 		.mem_unalign(mem_unalign),
+		.inst_bus_err(inst_bus_err),
+		.mem_bus_err(mem_bus_err),
 		.inst_illegal(inst_illegal),
 		.inst_unrecognize(inst_unrecognize),
 		.math_overflow(math_overflow),

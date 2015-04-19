@@ -33,6 +33,8 @@ module cp0 (
 	input wire mem_unauth_write,  // memory write not authorized exception
 	input wire inst_unalign,  // instruction address unaligned exception
 	input wire mem_unalign,  // memory address unaligned exception
+	input wire inst_bus_err,  // instruction bus read error
+	input wire mem_bus_err,  // memory bus read/write error
 	input wire inst_illegal,  // instruction illegal exception
 	input wire inst_unrecognize,  // instruction can't be recognized exception
 	input wire math_overflow,  // math overflow exception
@@ -113,6 +115,7 @@ module cp0 (
 	
 	// pipelined exceptions
 	reg inst_unalign_id, inst_unalign_exe, inst_unalign_mem;
+	reg inst_bus_err_id, inst_bus_err_exe, inst_bus_err_mem;
 	reg inst_page_fault_id, inst_page_fault_exe, inst_page_fault_mem;
 	reg inst_unauth_user_id, inst_unauth_user_exe, inst_unauth_user_mem;
 	reg unauth_exec_id, unauth_exec_exe, unauth_exec_mem;
@@ -128,12 +131,14 @@ module cp0 (
 	always @(posedge clk) begin
 		if (id_rst) begin
 			inst_unalign_id <= 0;
+			inst_bus_err_id <= 0;
 			inst_page_fault_id <= 0;
 			inst_unauth_user_id <= 0;
 			unauth_exec_id <= 0;
 		end
 		else if (id_en) begin
 			inst_unalign_id <= inst_unalign;
+			inst_bus_err_id <= inst_bus_err;
 			inst_page_fault_id <= inst_page_fault;
 			inst_unauth_user_id <= inst_unauth_user;
 			unauth_exec_id <= inst_unauth_exec;
@@ -143,6 +148,7 @@ module cp0 (
 	always @(posedge clk) begin
 		if (exe_rst) begin
 			inst_unalign_exe <= 0;
+			inst_bus_err_exe <= 0;
 			inst_page_fault_exe <= 0;
 			inst_unauth_user_exe <= 0;
 			unauth_exec_exe <= 0;
@@ -154,6 +160,7 @@ module cp0 (
 		end
 		else if (exe_en) begin
 			inst_unalign_exe <= inst_unalign_id;
+			inst_bus_err_exe <= inst_bus_err_id;
 			inst_page_fault_exe <= inst_page_fault_id;
 			inst_unauth_user_exe <= inst_unauth_user_id;
 			unauth_exec_exe <= unauth_exec_id;
@@ -168,6 +175,7 @@ module cp0 (
 	always @(posedge clk) begin
 		if (mem_rst) begin
 			inst_unalign_mem <= 0;
+			inst_bus_err_mem <= 0;
 			inst_page_fault_mem <= 0;
 			inst_unauth_user_mem <= 0;
 			unauth_exec_mem <= 0;
@@ -181,6 +189,7 @@ module cp0 (
 		end
 		else if (mem_en) begin
 			inst_unalign_mem <= inst_unalign_exe;
+			inst_bus_err_mem <= inst_bus_err_exe;
 			inst_page_fault_mem <= inst_page_fault_exe;
 			inst_unauth_user_mem <= inst_unauth_user_exe;
 			unauth_exec_mem <= unauth_exec_exe;
@@ -203,6 +212,10 @@ module cp0 (
 		case (1)
 			inst_unalign_mem: begin
 				ex_code = EX_INST_UNALIGN;
+				ex_ear = inst_addr_mem;
+			end
+			inst_bus_err_mem: begin
+				ex_code = EX_INST_BUS_ERR;
 				ex_ear = inst_addr_mem;
 			end
 			inst_page_fault_mem: begin
@@ -235,6 +248,10 @@ module cp0 (
 			end
 			mem_unalign: begin
 				ex_code = EX_MEM_UNALIGN;
+				ex_ear = mem_addr;
+			end
+			mem_bus_err: begin
+				ex_code = EX_MEM_BUS_ERR;
 				ex_ear = mem_addr;
 			end
 			mem_page_fault: begin
@@ -271,16 +288,23 @@ module cp0 (
 	`ifdef DEBUG
 	reg debug_step_prev;
 	reg fatal = 0;  // when fatal error detected, stop whole CPU permanently and only step execution is allowed
+	reg freeze = 0;  // when freeze error detected, stop whole CPU permanently and no step execution is allowed
 	
 	always @(posedge clk) begin
 		debug_step_prev <= debug_step;
 	end
 	
 	always @(posedge clk) begin
-		if (rst || wd_rst)
+		if (rst || wd_rst) begin
 			fatal <= 0;
-		else if (sr[31] && (ex || ir_valid || syscall_mem))
-			fatal <= 1;
+			freeze <= 0;
+		end
+		else begin
+			if (sr[31] && (ex || ir_valid || syscall_mem))
+				fatal <= 1;
+			if (inst_bus_err || mem_bus_err)
+				freeze <= 1;
+		end
 	end
 	`endif
 	
@@ -296,7 +320,7 @@ module cp0 (
 		wb_en = 1;
 		ir_en_pending = 1;
 		`ifdef DEBUG
-		if ((debug_en || fatal) && ~(~debug_step_prev && debug_step)) begin
+		if (((debug_en || fatal) && ~(~debug_step_prev && debug_step)) || freeze) begin
 			if_en = 0;
 			id_en = 0;
 			exe_en = 0;

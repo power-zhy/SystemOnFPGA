@@ -20,6 +20,7 @@ module wb_cpu_conn (
 	input wire lock,  // keep current data to avoid process repeating
 	output reg stall,  // stall other component when CMU is busy
 	output reg unalign,  // address unaligned error
+	output reg bus_err,  // bus error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
 	output reg wbm_cyc_o,
@@ -31,7 +32,8 @@ module wb_cpu_conn (
 	output reg wbm_we_o,
 	input wire [31:0] wbm_data_i,
 	output reg [31:0] wbm_data_o,
-	input wire wbm_ack_i
+	input wire wbm_ack_i,
+	input wire wbm_err_i
 	);
 	
 	`include "cpu_define.vh"
@@ -109,7 +111,8 @@ module wb_cpu_conn (
 	localparam
 		S_IDLE = 0,  // idle
 		S_UNCACHE = 1,  // deal with data which do not go through cache
-		S_UNCACHE_LOCK = 2;  // lock on current state to avoid read memory twice
+		S_UNCACHE_LOCK = 2,  // lock on current state to avoid read memory twice
+		S_ERROR = 3;  // error occurred
 	
 	reg [1:0] state = 0;
 	reg [1:0] next_state;
@@ -125,6 +128,8 @@ module wb_cpu_conn (
 			S_UNCACHE: begin
 				if (wbm_ack_i)
 					next_state = S_UNCACHE_LOCK;
+				else if (wbm_err_i)
+					next_state = S_ERROR;
 				else
 					next_state = S_UNCACHE;
 			end
@@ -133,6 +138,9 @@ module wb_cpu_conn (
 					next_state = S_UNCACHE_LOCK;
 				else
 					next_state = S_IDLE;
+			end
+			S_ERROR: begin
+				next_state = S_IDLE;
 			end
 		endcase
 	end
@@ -172,7 +180,7 @@ module wb_cpu_conn (
 				wbm_data_o <= data_align_w;
 			end
 			S_UNCACHE_LOCK: begin
-				if (wbm_cyc_o & wbm_ack_i)
+				if (wbm_cyc_o && wbm_ack_i)
 					data_align_r <= wbm_data_i;
 			end
 		endcase
@@ -181,10 +189,12 @@ module wb_cpu_conn (
 	// stall
 	always @(*) begin
 		stall = 0;
+		bus_err = 0;
 		if (~suspend) case (next_state)
 			S_IDLE: stall = 0;
 			S_UNCACHE: stall = 1;
 			S_UNCACHE_LOCK: stall = wbm_cyc_o & wbm_ack_i;
+			S_ERROR: bus_err = 1;
 		endcase
 	end
 	

@@ -18,6 +18,7 @@ module wb_arb (
 	output reg [31:0] m0_data_o,
 	input wire [31:0] m0_data_i,
 	output reg m0_ack_o,
+	output reg m0_err_o,
 	// wishbone master 1 - ICMU
 	input wire m1_cyc_i, m1_stb_i,
 	input wire [31:2] m1_addr_i,
@@ -28,6 +29,7 @@ module wb_arb (
 	output reg [31:0] m1_data_o,
 	input wire [31:0] m1_data_i,
 	output reg m1_ack_o,
+	output reg m1_err_o,
 	// wishbone master 2 - DCMU
 	input wire m2_cyc_i, m2_stb_i,
 	input wire [31:2] m2_addr_i,
@@ -38,6 +40,7 @@ module wb_arb (
 	output reg [31:0] m2_data_o,
 	input wire [31:0] m2_data_i,
 	output reg m2_ack_o,
+	output reg m2_err_o,
 	// wishbone master 3 - DMA
 	input wire m3_cyc_i, m3_stb_i,
 	input wire [31:2] m3_addr_i,
@@ -48,6 +51,7 @@ module wb_arb (
 	output reg [31:0] m3_data_o,
 	input wire [31:0] m3_data_i,
 	output reg m3_ack_o,
+	output reg m3_err_o,
 	// wishbone slave 0 - RAM
 	output reg  s0_cyc_o, s0_stb_o,
 	output reg [31:2] s0_addr_o,
@@ -58,6 +62,7 @@ module wb_arb (
 	input wire [31:0] s0_data_i,
 	output reg [31:0] s0_data_o,
 	input wire s0_ack_i,
+	input wire s0_err_i,
 	// wishbone slave 1 - ROM
 	output reg  s1_cyc_o, s1_stb_o,
 	output reg [31:2] s1_addr_o,
@@ -68,6 +73,7 @@ module wb_arb (
 	input wire [31:0] s1_data_i,
 	output reg [31:0] s1_data_o,
 	input wire s1_ack_i,
+	input wire s1_err_i,
 	// wishbone slave 2 - I/O devices
 	output reg  s2_cyc_o, s2_stb_o,
 	output reg [31:2] s2_addr_o,
@@ -77,7 +83,8 @@ module wb_arb (
 	output reg s2_we_o,
 	input wire [31:0] s2_data_i,
 	output reg [31:0] s2_data_o,
-	input wire s2_ack_i
+	input wire s2_ack_i,
+	input wire s2_err_i
 	);
 	
 	`include "function.vh"
@@ -102,7 +109,7 @@ module wb_arb (
 	reg m_we_i;
 	reg [31:0] m_data_o;
 	reg [31:0] m_data_i;
-	reg m_ack_o;
+	reg m_ack_o, m_err_o;
 	
 	// slave selector
 	wire s0_sel, s1_sel, s2_sel;
@@ -212,18 +219,22 @@ module wb_arb (
 				0: begin
 					m0_data_o = m_data_o;
 					m0_ack_o = m_ack_o;
+					m0_err_o = m_err_o;
 				end
 				1: begin
 					m1_data_o = m_data_o;
 					m1_ack_o = m_ack_o;
+					m1_err_o = m_err_o;
 				end
 				2: begin
 					m2_data_o = m_data_o;
 					m2_ack_o = m_ack_o;
+					m2_err_o = m_err_o;
 				end
 				3: begin
 					m3_data_o = m_data_o;
 					m3_ack_o = m_ack_o;
+					m3_err_o = m_err_o;
 				end
 			endcase
 		end
@@ -293,19 +304,23 @@ module wb_arb (
 	always @(*) begin
 		m_data_o = 0;
 		m_ack_o = 0;
+		m_err_o = 0;
 		if (curr_cyc || next_cyc) begin
 			case (1)
 				s0_sel: begin
 					m_data_o = s0_data_i;
 					m_ack_o = s0_ack_i;
+					m_err_o = s0_err_i;
 				end
 				s1_sel: begin
 					m_data_o = s1_data_i;
 					m_ack_o = s1_ack_i;
+					m_err_o = s1_err_i;
 				end
 				s2_sel: begin
 					m_data_o = s2_data_i;
 					m_ack_o = s2_ack_i;
+					m_err_o = s2_err_i;
 				end
 			endcase
 		end

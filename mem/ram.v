@@ -17,7 +17,8 @@ module ram (
 	input wire wbs_we_i,
 	input wire [WORD_BITS-1:0] wbs_data_i,
 	output reg [WORD_BITS-1:0] wbs_data_o,
-	output reg wbs_ack_o
+	output reg wbs_ack_o,
+	output wire wbs_err_o
 	);
 	
 	parameter
@@ -36,6 +37,7 @@ module ram (
 	assign
 		addr_buf = (wbs_ack_o & wbs_burst) ? wbs_addr_i[ADDR_BITS-1:2] + 1'h1 : wbs_addr_i[ADDR_BITS-1:2],
 		wbs_cs = wbs_cyc_i & wbs_stb_i & wbs_addr_i[WORD_BITS-1:ADDR_BITS] == HIGH_ADDR,
+		wbs_err_o = wbs_cyc_i & wbs_stb_i & wbs_addr_i[WORD_BITS-1:ADDR_BITS] != HIGH_ADDR,
 		wbs_burst = (wbs_cti_i == BURST_CTI) & (wbs_bte_i == BURST_BTE) & (wbs_sel_i == {WORD_BYTES{1'b1}});
 	
 	genvar i;

@@ -63,7 +63,7 @@ module wb_vga (
 	wire h_en_core;
 	wire v_en_core;
 	
-	/*vga_core VGA_CORE (
+	vga_core VGA_CORE (
 		.clk(clk),
 		.rst(rst),
 		.clk_base(clk_base),
@@ -80,8 +80,8 @@ module wb_vga (
 		.v_sync(v_sync_core),
 		.h_en(h_en_core),
 		.v_en(v_en_core)
-		);*/
-	vga_core_640_480_60 VGA_CORE (
+		);
+	/*vga_core_640_480_60 VGA_CORE (
 		.clk(clk),
 		.rst(rst),
 		.clk_base(clk_base),
@@ -97,7 +97,7 @@ module wb_vga (
 		.v_sync(v_sync_core),
 		.h_en(h_en_core),
 		.v_en(v_en_core)
-		);
+		);*/
 	
 	wire text_en, graphic_en;
 	

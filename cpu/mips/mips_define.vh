@@ -67,7 +67,9 @@ localparam
 	EX_UNAUTH_EXEC       = 7,
 	EX_UNAUTH_WRITE      = 8,
 	EX_MATH_OVERFLOW     = 9,
-	EX_MATH_DIVIDE_ZERO  = 10;
+	EX_MATH_DIVIDE_ZERO  = 10,
+	EX_INST_BUS_ERR      = 11,
+	EX_MEM_BUS_ERR       = 12;
 
 // variables
 localparam

@@ -21,6 +21,7 @@ module wb_mem_adapter (
 	input wire [31:0] wbs_data_i,
 	output wire [31:0] wbs_data_o,
 	output reg wbs_ack_o,
+	output wire wbs_err_o,
 	// memory interfaces
 	input wire mem_clk,
 	output reg mem_cs,
@@ -45,6 +46,7 @@ module wb_mem_adapter (
 	wire wbs_cs, wbs_burst;
 	assign
 		wbs_cs = wbs_cyc_i & wbs_stb_i & wbs_addr_i[31:ADDR_BITS] == HIGH_ADDR,
+		wbs_err_o = wbs_cyc_i & wbs_stb_i & wbs_addr_i[31:ADDR_BITS] != HIGH_ADDR,
 		wbs_burst = (wbs_cti_i == BURST_CTI) & (wbs_bte_i == BURST_BTE) & (wbs_sel_i == 4'b1111);
 	
 	// buffer
