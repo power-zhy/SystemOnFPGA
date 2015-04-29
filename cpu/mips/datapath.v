@@ -147,19 +147,20 @@ module datapath (
 	assign
 		inst_addr_next = inst_addr + 4;
 	
+	always @(*) begin
+		if_valid = ~if_rst & (if_en | exception);
+	end
+	
 	always @(posedge clk) begin
 		if (if_rst) begin
-			if_valid <= 0;
 			inst_ren <= 0;
 			inst_addr <= 0;
 		end
 		else if (exception) begin
-			if_valid <= 1;
 			inst_ren <= 1;
 			inst_addr <= exception_target;
 		end
 		else if (if_en) begin
-			if_valid <= 1;
 			inst_ren <= 1;
 			case (pc_src_ctrl)
 				PC_NEXT: inst_addr <= inst_addr_next;

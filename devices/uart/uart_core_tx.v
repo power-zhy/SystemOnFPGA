@@ -3,6 +3,7 @@
 
 /**
  * UART TX part for sending data only.
+ * Simplified version with 8 data bits, 1 stop bits and no check bit.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
 module uart_core_tx (
@@ -14,7 +15,7 @@ module uart_core_tx (
 	input wire check_en,  // whether to use data checking or not
 	input wire [1:0] check_type,  // data checking type, 00 for odd, 01 for even, 10 for mark, 11 for space
 	input wire en,  // enable signal, flag to start transmitting
-	input wire [DATA_BITS_MAX-1:0] data,  // data to send out
+	input wire [7:0] data,  // data to send out
 	output reg busy,  // busy flag
 	output reg ack,  // data sent acknowledge
 	// UART TX interface
@@ -26,83 +27,24 @@ module uart_core_tx (
 		CLK_FREQ = 100,  // main clock frequency in MHz, should be multiple of 10M
 		BAUD_DIV_WIDTH = 8;  // width for baud rate division
 	localparam
-		DATA_BITS_MAX = 8,  // maximum data length for transmit
-		STOP_BITS_MAX = 2,  // maximum stop flag length
 		SAMPLE_COUNT = 8,
 		SAMPLE_COUNT_WIDTH = GET_WIDTH(SAMPLE_COUNT-1),
 		CLK_DIV = CLK_FREQ / 10,
-		CLK_DIV_WIDTH = GET_WIDTH(CLK_DIV-1),
-		TRANS_BITS_MAX = DATA_BITS_MAX + STOP_BITS_MAX + 2,
-		TRANS_BITS_WIDTH = GET_WIDTH(TRANS_BITS_MAX);
+		CLK_DIV_WIDTH = GET_WIDTH(CLK_DIV-1);
 	
-	reg check_bit;
-	reg [TRANS_BITS_WIDTH-1:0] trans_bits;  // number of actual transmitting bits - 1
-	reg [TRANS_BITS_MAX-1:0] data_buf;
+	reg bit_done;
 	reg [CLK_DIV_WIDTH-1:0] clk_count = 0;
 	reg [BAUD_DIV_WIDTH-1:0] hns_count = 0;
 	reg [SAMPLE_COUNT_WIDTH-1:0] sample_count = 0;
-	reg bit_done;
-	reg [TRANS_BITS_WIDTH-1:0] bit_count = 0;
-	
-	always @(*) begin
-		case (data_type)  // regard one and a half stop bits as two
-			2'b00: case (stop_type)
-				2'b00: trans_bits = check_en ? 4'd10 : 4'd9;
-				default: trans_bits = check_en ? 4'd11 : 4'd10;
-			endcase
-			2'b01: case (stop_type)
-				2'b00: trans_bits = check_en ? 4'd9 : 4'd8;
-				default: trans_bits = check_en ? 4'd10 : 4'd9;
-			endcase
-			2'b10: case (stop_type)
-				2'b00: trans_bits = check_en ? 4'd8 : 4'd7;
-				default: trans_bits = check_en ? 4'd9 : 4'd8;
-			endcase
-			2'b11: case (stop_type)
-				2'b00: trans_bits = check_en ? 4'd7 : 4'd6;
-				default: trans_bits = check_en ? 4'd8 : 4'd7;
-			endcase
-		endcase
-	end
-	
-	always @(*) begin
-		if (check_en) begin
-			case (check_type)
-				2'b00: begin
-					case (data_type)
-						2'b00: check_bit = ~(^data[7:0]);
-						2'b01: check_bit = ~(^data[6:0]);
-						2'b10: check_bit = ~(^data[5:0]);
-						2'b11: check_bit = ~(^data[4:0]);
-					endcase
-				end
-				2'b01: begin
-					case (data_type)
-						2'b00: check_bit = (^data[7:0]);
-						2'b01: check_bit = (^data[6:0]);
-						2'b10: check_bit = (^data[5:0]);
-						2'b11: check_bit = (^data[4:0]);
-					endcase
-				end
-				2'b10: check_bit = 1;
-				2'b11: check_bit = 0;
-			endcase
-		end
-		else begin
-			check_bit = 0;
-		end
-	end
 	
 	always @(posedge clk) begin
 		bit_done <= 0;
-		ack <= 0;
-		if (rst) begin
+		if (rst || ~busy) begin
 			clk_count <= 0;
 			hns_count <= 0;
 			sample_count <= 0;
-			bit_count <= 0;
 		end
-		else if (busy) begin
+		else begin
 			if (clk_count != CLK_DIV-1) begin
 				clk_count <= clk_count + 1'h1;
 			end
@@ -117,52 +59,154 @@ module uart_core_tx (
 						sample_count <= sample_count + 1'h1;
 					end
 					else begin
-						sample_count <= 0;
 						bit_done <= 1;
-						if (bit_count != trans_bits) begin
-							bit_count <= bit_count + 1'h1;
-						end
-						else begin
-							bit_count <= 0;
-							ack <= 1;
-						end
+						sample_count <= 0;
 					end
 				end
 			end
 		end
-		else begin
-			clk_count <= 0;
-			hns_count <= 0;
-			sample_count <= 0;
-			bit_count <= 0;
+	end
+	
+	reg [7:0] data_buf;
+	reg check_bit;
+	
+	always @(*) begin
+		check_bit = 0;
+		if (check_en) begin
+			case (check_type)
+				2'b00: begin
+					case (data_type)
+						2'b00: check_bit = ~(^data_buf[7:0]);
+						2'b01: check_bit = ~(^data_buf[6:0]);
+						2'b10: check_bit = ~(^data_buf[5:0]);
+						2'b11: check_bit = ~(^data_buf[4:0]);
+					endcase
+				end
+				2'b01: begin
+					case (data_type)
+						2'b00: check_bit = (^data_buf[7:0]);
+						2'b01: check_bit = (^data_buf[6:0]);
+						2'b10: check_bit = (^data_buf[5:0]);
+						2'b11: check_bit = (^data_buf[4:0]);
+					endcase
+				end
+				2'b10: check_bit = 1;
+				2'b11: check_bit = 0;
+			endcase
 		end
 	end
 	
 	localparam
-		S_IDLE = 0,  // idle
-		S_LOAD = 1,  // load data, prepare for sending
-		S_TRANS = 2;  // send data
+		S_IDLE = 0,
+		S_START = 1,
+		S_DATA0 = 2,
+		S_DATA1 = 3,
+		S_DATA2 = 4,
+		S_DATA3 = 5,
+		S_DATA4 = 6,
+		S_DATA5 = 7,
+		S_DATA6 = 8,
+		S_DATA7 = 9,
+		S_CHECK = 10,
+		S_STOP0 = 11,
+		S_STOP1 = 12,
+		S_DONE = 13;
 	
-	reg [1:0] state = 0;
-	reg [1:0] next_state;
+	reg [3:0] state = 0;
+	reg [3:0] next_state;
 	
 	always @(*) begin
 		next_state = S_IDLE;
+		busy = 0;
 		case (state)
 			S_IDLE: begin
 				if (en)
-					next_state = S_LOAD;
+					next_state = S_START;
 				else
 					next_state = S_IDLE;
 			end
-			S_LOAD: begin
-				next_state = S_TRANS;
-			end
-			S_TRANS: begin
-				if (ack)
-					next_state = S_IDLE;
+			S_START, S_DATA0, S_DATA1, S_DATA2, S_DATA3: begin
+				busy = 1;
+				if (bit_done)
+					next_state = state + 1'h1;
 				else
-					next_state = S_TRANS;
+					next_state = state;
+			end
+			S_DATA4: begin
+				busy = 1;
+				if (bit_done) begin
+					if (data_type == 2'b11)
+						next_state = check_en ? S_CHECK : S_STOP0;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DATA5: begin
+				busy = 1;
+				if (bit_done) begin
+					if (data_type == 2'b10)
+						next_state = check_en ? S_CHECK : S_STOP0;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DATA6: begin
+				busy = 1;
+				if (bit_done) begin
+					if (data_type == 2'b01)
+						next_state = check_en ? S_CHECK : S_STOP0;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DATA7: begin
+				busy = 1;
+				if (bit_done) begin
+					next_state = check_en ? S_CHECK : S_STOP0;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_CHECK: begin
+				busy = 1;
+				if (bit_done)
+					next_state = S_STOP0;
+				else
+					next_state = S_CHECK;
+			end
+			S_STOP0: begin
+				busy = 1;
+				if (bit_done) begin
+					if (stop_type == 0)
+						next_state = S_DONE;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_STOP1: begin
+				busy = 1;
+				if (bit_done) begin
+					next_state = S_DONE;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DONE: begin
+				busy = 1;
 			end
 		endcase
 	end
@@ -175,33 +219,36 @@ module uart_core_tx (
 	end
 	
 	always @(posedge clk) begin
+		tx <= 1;
 		if (rst) begin
-			busy <= 0;
 			data_buf <= 0;
-			tx <= 1;
 		end
-		else case (next_state)
+		else case (state)
 			S_IDLE: begin
-				busy <= 0;
 				data_buf <= 0;
+			end
+			S_START: begin
+				data_buf <= data;
+				tx <= 0;
+			end
+			S_DATA0, S_DATA1, S_DATA2, S_DATA3, S_DATA4, S_DATA5, S_DATA6, S_DATA7: begin
+				tx <= data_buf[0];
+				if (bit_done)
+					data_buf <= {1'b1, data_buf[7:1]};
+			end
+			S_CHECK: begin
+				tx <= check_bit;
+			end
+			S_STOP0, S_STOP1: begin
 				tx <= 1;
 			end
-			S_LOAD: begin
-				busy <= 1;
-				case (data_type)
-					2'b00: data_buf <= {2'b11, check_en?check_bit:1'b1, data[7:0], 1'b0};
-					2'b01: data_buf <= {3'b111, check_en?check_bit:1'b1, data[6:0], 1'b0};
-					2'b10: data_buf <= {4'b1111, check_en?check_bit:1'b1, data[5:0], 1'b0};
-					2'b11: data_buf <= {5'b11111, check_en?check_bit:1'b1, data[4:0], 1'b0};
-				endcase
-				tx <= 1;  // TX is one clock after busy, as data_buf is also one clock after bit_done
-			end
-			S_TRANS: begin
-				busy <= 1;
-				if (bit_done)
-					data_buf <= {1'b1, data_buf[TRANS_BITS_MAX-1:1]};
-				tx <= data_buf[0];
-			end
+		endcase
+	end
+	
+	always @(posedge clk) begin
+		ack <= 0;
+		if (~rst) case (next_state)
+			S_DONE: ack <= 1;
 		endcase
 	end
 	

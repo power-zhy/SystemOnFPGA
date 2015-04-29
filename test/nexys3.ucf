@@ -247,7 +247,7 @@ NET "keyboard_clk"  LOC = "L12" | IOSTANDARD = "LVCMOS33" | PULLUP;  #Bank = 1, 
 
 
 ## Usb-RS232 interface
-NET "uart_rx"           LOC = "N17" | IOSTANDARD = "LVCMOS33";   #Bank = 1, Pin name = IO_L48P_HDC_M1DQ8,                 Sch name = MCU-RX
+NET "uart_rx"           LOC = "N17" | IOSTANDARD = "LVCMOS33" | PULLUP;   #Bank = 1, Pin name = IO_L48P_HDC_M1DQ8,                 Sch name = MCU-RX
 NET "uart_tx"           LOC = "N18" | IOSTANDARD = "LVCMOS33";   #Bank = 1, Pin name = IO_L48N_M1DQ9,                     Sch name = MCU-TX
 
 

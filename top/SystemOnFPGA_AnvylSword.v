@@ -204,6 +204,7 @@ module SystemOnFPGA_AnvylSword (
 	wire [3:0] btn_x_buf;
 	wire [3:0] btn_y_buf;
 	wire rst_buf;
+	wire uart_rx_buf;
 	
 	`ifndef SIMULATING
 	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(0))
@@ -233,6 +234,8 @@ module SystemOnFPGA_AnvylSword (
 		AJY3 (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_y[3]), .sig_o(btn_y_buf[3]));
 	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(1))
 		AJRST (.clk(clk_cpu), .rst(1'b0), .sig_i(~rst_n), .sig_o(rst_buf));
+	anti_jitter #(.CLK_FREQ(CLK_FREQ_DEV), .JITTER_MAX(1), .INIT_VALUE(1))
+		AJUART (.clk(clk_dev), .rst(1'b0), .sig_i(uart_rx), .sig_o(uart_rx_buf));
 	`else
 	assign
 		switch_buf = switch,
@@ -846,7 +849,7 @@ module SystemOnFPGA_AnvylSword (
 		) WB_UART (
 		.clk(clk_dev),
 		.rst(1'b0),
-		.rx(uart_rx),
+		.rx(uart_rx_buf),
 		.tx(uart_tx),
 		.wbs_clk_i(clk_bus),
 		.wbs_cs_i(uart_cs_i),

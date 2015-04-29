@@ -68,6 +68,7 @@ module test_frame_nexys3 (
 	// anti-jitter
 	wire [7:0] switch_buf;
 	wire btn_l_buf, btn_r_buf, btn_u_buf, btn_d_buf, rst_buf;
+	wire uart_rx_buf;
 	
 	`ifndef SIMULATING
 	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(0))
@@ -85,6 +86,8 @@ module test_frame_nexys3 (
 		AJD (.clk(clk_cpu), .rst(1'b0), .sig_i(btn_d), .sig_o(btn_d_buf));
 	anti_jitter #(.CLK_FREQ(CLK_FREQ_CPU), .JITTER_MAX(10000), .INIT_VALUE(1))
 		AJRST (.clk(clk_cpu), .rst(1'b0), .sig_i(rst), .sig_o(rst_buf));
+	anti_jitter #(.CLK_FREQ(CLK_FREQ_DEV), .JITTER_MAX(1), .INIT_VALUE(1))
+		AJUART (.clk(clk_dev), .rst(1'b0), .sig_i(uart_rx), .sig_o(uart_rx_buf));
 	`else
 	assign
 		switch_buf = switch,
@@ -189,7 +192,7 @@ module test_frame_nexys3 (
 	`define DISPLAY_SIG
 	`define PCM_SIG
 	*/
-	
+	/*
 	// VGA test
 	test_vga #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -212,7 +215,7 @@ module test_frame_nexys3 (
 		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define VGA_SIG
-	
+	*/
 	/*
 	// KEYBOARD test
 	test_ps2 #(
@@ -234,7 +237,7 @@ module test_frame_nexys3 (
 	`define DISPLAY_SIG
 	`define KEYBOARD_SIG
 	*/
-	/*
+	
 	// UART test
 	test_uart #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -247,14 +250,14 @@ module test_frame_nexys3 (
 		.din(switch_buf),
 		.data(disp_data),
 		.state(led),
-		.uart_rx(uart_rx),
+		.uart_rx(uart_rx_buf),
 		.uart_tx(uart_tx)
 		);
 	assign
 		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define UART_SIG
-	*/
+	
 	
 	// default value for signals
 	`ifndef DISPLAY_SIG

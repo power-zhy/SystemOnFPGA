@@ -539,7 +539,7 @@ module cp0 (
 			wdr_sec_count <= 0;
 		end
 		`ifdef DEBUG
-		else if (debug_en) begin
+		else if (debug_en || fatal || freeze) begin
 			wdr_clk_count <= 0;
 			wdr_sec_count <= 0;
 		end

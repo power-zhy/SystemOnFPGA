@@ -3,6 +3,7 @@
 
 /**
  * UART RX part for receiving data only.
+ * Simplified version with 8 data bits, 1 stop bits and no check bit.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
 module uart_core_rx (
@@ -14,10 +15,10 @@ module uart_core_rx (
 	input wire check_en,  // whether to use data checking or not
 	input wire [1:0] check_type,  // data checking type, 00 for odd, 01 for even, 10 for mark, 11 for space
 	input wire en,  // enable signal
-	output reg [DATA_BITS_MAX-1:0] data,  // data received in
+	output reg [7:0] data,  // data received in
 	output reg busy,  // busy flag
 	output reg ack,  // data received acknowledge
-	output reg err,  // data checking error
+	output reg err,  // data receiving error
 	// UART TX interface
 	input wire rx
 	);
@@ -27,125 +28,31 @@ module uart_core_rx (
 		CLK_FREQ = 100,  // main clock frequency in MHz, should be multiple of 10M
 		BAUD_DIV_WIDTH = 8;  // width for baud rate division
 	localparam
-		DATA_BITS_MAX = 8,  // maximum data length for transmit
-		STOP_BITS_MAX = 2,  // maximum stop flag length
-		SAMPLE_COUNT = 8,
+		SAMPLE_COUNT = 8,  // sample input 8 times for one single bit
 		SAMPLE_COUNT_WIDTH = GET_WIDTH(SAMPLE_COUNT-1),
 		CLK_DIV = CLK_FREQ / 10,
-		CLK_DIV_WIDTH = GET_WIDTH(CLK_DIV-1),
-		TRANS_BITS_MAX = DATA_BITS_MAX + STOP_BITS_MAX,  // no need to store the start bit and last stop bit in current implement
-		TRANS_BITS_WIDTH = GET_WIDTH(TRANS_BITS_MAX);
+		CLK_DIV_WIDTH = GET_WIDTH(CLK_DIV-1);
 	
-	reg check_bit;
-	reg [TRANS_BITS_WIDTH-1:0] trans_bits;
-	reg [TRANS_BITS_MAX-1:0] data_buf;
+	reg bit_ready = 0;
+	reg curr_bit;
 	reg [CLK_DIV_WIDTH-1:0] clk_count = 0;
 	reg [BAUD_DIV_WIDTH-1:0] hns_count = 0;
 	reg [SAMPLE_COUNT_WIDTH-1:0] sample_count = 0;
 	reg [SAMPLE_COUNT_WIDTH-1:0] pos_count = 0;
 	reg [SAMPLE_COUNT_WIDTH-1:0] neg_count = 0;
-	reg [TRANS_BITS_WIDTH-1:0] bit_count = 0;
-	
-	always @(*) begin
-		case (data_type)  // regard one and a half stop bits as one
-			2'b00: case (stop_type)
-				2'b10: trans_bits = check_en ? 4'd11 : 4'd10;
-				default: trans_bits = check_en ? 4'd10 : 4'd9;
-			endcase
-			2'b01: case (stop_type)
-				2'b10: trans_bits = check_en ? 4'd10 : 4'd9;
-				default: trans_bits = check_en ? 4'd9 : 4'd8;
-			endcase
-			2'b10: case (stop_type)
-				2'b10: trans_bits = check_en ? 4'd9 : 4'd8;
-				default: trans_bits = check_en ? 4'd8 : 4'd7;
-			endcase
-			2'b11: case (stop_type)
-				2'b10: trans_bits = check_en ? 4'd8 : 4'd7;
-				default: trans_bits = check_en ? 4'd7 : 4'd6;
-			endcase
-		endcase
-	end
-	
-	always @(*) begin
-		if (check_en) begin
-			case (check_type)
-				2'b00: begin
-					case (data_type)
-						2'b00: check_bit = ~(^data[7:0]);
-						2'b01: check_bit = ~(^data[6:0]);
-						2'b10: check_bit = ~(^data[5:0]);
-						2'b11: check_bit = ~(^data[4:0]);
-					endcase
-				end
-				2'b01: begin
-					case (data_type)
-						2'b00: check_bit = (^data[7:0]);
-						2'b01: check_bit = (^data[6:0]);
-						2'b10: check_bit = (^data[5:0]);
-						2'b11: check_bit = (^data[4:0]);
-					endcase
-				end
-				2'b10: check_bit = 1;
-				2'b11: check_bit = 0;
-			endcase
-		end
-		else begin
-			check_bit = 0;
-		end
-	end
-	
-	reg checked;
-	always @(*) begin
-		case ({check_en, data_type})  // last stop bit is not in data_buf
-			3'b000: case (stop_type)
-				2'b10: {checked, data[7:0]} = {1'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-9]};
-				default: {checked, data[7:0]} = {1'b0, data_buf[TRANS_BITS_MAX-1:TRANS_BITS_MAX-8]};
-			endcase
-			3'b001: case (stop_type)
-				2'b10: {checked, data[7:0]} = {2'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-8]};
-				default: {checked, data[7:0]} = {2'b0, data_buf[TRANS_BITS_MAX-1:TRANS_BITS_MAX-7]};
-			endcase
-			3'b010: case (stop_type)
-				2'b10: {checked, data[7:0]} = {3'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-7]};
-				default: {checked, data[7:0]} = {3'b0, data_buf[TRANS_BITS_MAX-1:TRANS_BITS_MAX-6]};
-			endcase
-			3'b011: case (stop_type)
-				2'b10: {checked, data[7:0]} = {4'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-6]};
-				default: {checked, data[7:0]} = {4'b0, data_buf[TRANS_BITS_MAX-1:TRANS_BITS_MAX-5]};
-			endcase
-			3'b100: case (stop_type)
-				2'b10: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-10]};
-				default: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-1:TRANS_BITS_MAX-9]};
-			endcase
-			3'b101: case (stop_type)
-				2'b10: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-2], 1'b0, data_buf[TRANS_BITS_MAX-3:TRANS_BITS_MAX-9]};
-				default: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-1], 1'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-8]};
-			endcase
-			3'b110: case (stop_type)
-				2'b10: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-2], 2'b0, data_buf[TRANS_BITS_MAX-3:TRANS_BITS_MAX-8]};
-				default: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-1], 2'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-7]};
-			endcase
-			3'b111: case (stop_type)
-				2'b10: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-2], 3'b0, data_buf[TRANS_BITS_MAX-3:TRANS_BITS_MAX-7]};
-				default: {checked, data[7:0]} = {data_buf[TRANS_BITS_MAX-1], 3'b0, data_buf[TRANS_BITS_MAX-2:TRANS_BITS_MAX-6]};
-			endcase
-		endcase
-	end
+	reg count_clear = 0;
 	
 	always @(posedge clk) begin
-		ack <= 0;
-		err <= 0;
-		if (rst) begin
+		bit_ready <= 0;
+		if (rst || count_clear) begin
+			curr_bit <= 0;
 			clk_count <= 0;
 			hns_count <= 0;
 			sample_count <= 0;
 			pos_count <= 0;
 			neg_count <= 0;
-			bit_count <= 0;
-			data_buf <= 0;
 		end
-		else if (busy) begin
+		else begin
 			if (clk_count != CLK_DIV-1) begin
 				clk_count <= clk_count + 1'h1;
 			end
@@ -157,51 +64,52 @@ module uart_core_rx (
 				else begin
 					hns_count <= 0;
 					if (sample_count != SAMPLE_COUNT-1) begin
+						sample_count <= sample_count + 1'h1;
 						if (rx)
 							pos_count <= pos_count + 1'h1;
 						else
 							neg_count <= neg_count + 1'h1;
-						sample_count <= sample_count + 1'h1;
 					end
 					else begin
+						bit_ready <= 1;
+						curr_bit <= (pos_count > neg_count);
 						sample_count <= 0;
 						pos_count <= 0;
 						neg_count <= 0;
-						/*if (bit_count != trans_bits) begin
-							bit_count <= bit_count + 1'h1;
-							data_buf <= {(pos_count > neg_count), data_buf[TRANS_BITS_MAX-1:1]};  // would not save the last stop bit
-						end
-						else begin
-							bit_count <= 0;
-							if (pos_count > neg_count && checked == check_bit)
-								ack <= 1;
-							else
-								err <= 1;
-						end*/
-						if (bit_count == trans_bits-1'h1) begin
-							ack <= 1;
-							bit_count <= 0;
-						end
-						else begin
-							bit_count <= bit_count + 1'h1;
-						end
-						data_buf <= {(pos_count > neg_count), data_buf[TRANS_BITS_MAX-1:1]};  // would not save the last stop bit
 					end
 				end
 			end
 		end
-		else begin
-			clk_count <= 0;
-			hns_count <= 0;
-			sample_count <= 0;
-			pos_count <= 0;
-			neg_count <= 0;
-			bit_count <= 0;
-			data_buf <= 0;
+	end
+	
+	reg check_bit;
+	always @(*) begin
+		check_bit = 0;
+		if (check_en) begin
+			case (check_type)
+				2'b00: begin
+					case (data_type)
+						2'b00: check_bit = ~(^data[7:0]);
+						2'b01: check_bit = ~(^data[7:1]);
+						2'b10: check_bit = ~(^data[7:2]);
+						2'b11: check_bit = ~(^data[7:3]);
+					endcase
+				end
+				2'b01: begin
+					case (data_type)
+						2'b00: check_bit = (^data[7:0]);
+						2'b01: check_bit = (^data[7:1]);
+						2'b10: check_bit = (^data[7:2]);
+						2'b11: check_bit = (^data[7:3]);
+					endcase
+				end
+				2'b10: check_bit = 1;
+				2'b11: check_bit = 0;
+			endcase
 		end
 	end
 	
-	reg rx_prev;
+	reg rx_prev = 0;
 	always @(posedge clk) begin
 		if (rst)
 			rx_prev <= 0;
@@ -210,36 +118,157 @@ module uart_core_rx (
 	end
 	
 	localparam
-		S_IDLE = 0,  // idle
-		S_START = 1,  // receive and check start bit
-		S_TRANS = 2;  // receive data
+		S_IDLE = 0,
+		S_START = 1,
+		S_DATA0 = 2,
+		S_DATA1 = 3,
+		S_DATA2 = 4,
+		S_DATA3 = 5,
+		S_DATA4 = 6,
+		S_DATA5 = 7,
+		S_DATA6 = 8,
+		S_DATA7 = 9,
+		S_CHECK = 10,
+		S_STOP0 = 11,
+		S_STOP1 = 12,
+		S_DONE = 13,
+		S_ERROR = 14;
 	
-	reg [1:0] state = 0;
-	reg [1:0] next_state;
+	reg [3:0] state = 0;
+	reg [3:0] next_state;
 	
 	always @(*) begin
 		next_state = S_IDLE;
+		busy = 0;
+		count_clear = 0;
 		case (state)
 			S_IDLE: begin
+				count_clear = 1;
 				if (en && rx_prev && ~rx)
 					next_state = S_START;
 				else
 					next_state = S_IDLE;
 			end
 			S_START: begin
-				if (bit_count == 1)
-					if (data_buf[TRANS_BITS_MAX-1])  // invalid start bit
-						next_state = S_IDLE;
-					else
-						next_state = S_TRANS;
-				else
+				busy = 1;
+				if (~bit_ready)
 					next_state = S_START;
+				else if (curr_bit)
+					next_state = S_ERROR;
+				else
+					next_state = S_DATA0;
 			end
-			S_TRANS: begin
-				if (ack || err)
+			S_DATA0, S_DATA1, S_DATA2, S_DATA3: begin
+				busy = 1;
+				if (bit_ready)
+					next_state = state + 1'h1;
+				else
+					next_state = state;
+			end
+			S_DATA4: begin
+				busy = 1;
+				if (bit_ready) begin
+					if (data_type == 2'b11)
+						next_state = check_en ? S_CHECK : S_STOP0;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DATA5: begin
+				busy = 1;
+				if (bit_ready) begin
+					if (data_type == 2'b10)
+						next_state = check_en ? S_CHECK : S_STOP0;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DATA6: begin
+				busy = 1;
+				if (bit_ready) begin
+					if (data_type == 2'b01)
+						next_state = check_en ? S_CHECK : S_STOP0;
+					else
+						next_state = state + 1'h1;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DATA7: begin
+				busy = 1;
+				if (bit_ready) begin
+					next_state = check_en ? S_CHECK : S_STOP0;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_CHECK: begin
+				busy = 1;
+				if (bit_ready) begin
+					if (curr_bit != check_bit)
+						next_state = S_ERROR;
+					else
+						next_state = S_STOP0;
+				end
+				else begin
+					next_state = S_CHECK;
+				end
+			end
+			S_STOP0: begin
+				busy = 1;
+				if (stop_type[1]) begin
+					if (bit_ready) begin
+						if (curr_bit)
+							next_state = state + 1'h1;
+						else
+							next_state = S_ERROR;
+					end
+					else begin
+						next_state = state;
+					end
+				end
+				else begin
+					if (pos_count == (SAMPLE_COUNT-1)/2+1) begin
+						count_clear = 1;
+						next_state = S_DONE;
+					end
+					else if (neg_count == (SAMPLE_COUNT-1)/2+1) begin
+						count_clear = 1;
+						next_state = S_ERROR;
+					end
+					else begin
+						next_state = state;
+					end
+				end
+			end
+			S_STOP1: begin
+				busy = 1;
+				if (pos_count == (SAMPLE_COUNT-1)/2+1) begin
+					count_clear = 1;
+					next_state = S_DONE;
+				end
+				else if (neg_count == (SAMPLE_COUNT-1)/2+1) begin
+					count_clear = 1;
+					next_state = S_ERROR;
+				end
+				else begin
+					next_state = state;
+				end
+			end
+			S_DONE, S_ERROR: begin
+				busy = 1;
+				if (rx)
 					next_state = S_IDLE;
 				else
-					next_state = S_TRANS;
+					next_state = S_START;
 			end
 		endcase
 	end
@@ -252,15 +281,31 @@ module uart_core_rx (
 	end
 	
 	always @(posedge clk) begin
+		ack <= 0;
+		err <= 0;
 		if (rst) begin
-			busy <= 0;
+			data <= 0;
 		end
-		else case (next_state)
-			S_IDLE: begin
-				busy <= 0;
+		else case (state)
+			S_IDLE, S_START: begin
+				data <= 0;
 			end
-			default: begin
-				busy <= 1;
+			S_DATA0, S_DATA1, S_DATA2, S_DATA3, S_DATA4, S_DATA5, S_DATA6, S_DATA7: begin
+				if (bit_ready)
+					data <= {curr_bit, data[7:1]};
+			end
+			S_CHECK: begin
+				if (bit_ready) case (data_type)
+					2'b01: data <= {1'b0, data[7:1]};
+					2'b10: data <= {2'b0, data[7:2]};
+					2'b11: data <= {3'b0, data[7:3]};
+				endcase
+			end
+			S_DONE: begin
+				ack <= 1;
+			end
+			S_ERROR: begin
+				err <= 1;
 			end
 		endcase
 	end
