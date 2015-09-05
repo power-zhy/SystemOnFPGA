@@ -11,12 +11,12 @@ Usage:
 	4. Enjoy!
 
 When running:
-	Center Button: Restart
-	Left Button: Fast Rewind
-	Right Button: Fast Forward
-	Up Button: Half Play Speed
-	Down Button: Set the VGA's resolution by Switch[3:0]
-	Switch[7]: System Pause
+	BTNRST(Sword) or BTNC(Nexys3): Restart
+	SW[11](Sword) or BTNL(Nexys3): Fast Rewind
+	SW[10](Sword) or BTNR(Nexys3): Fast Forward
+	SW[09](Sword) or BTNU(Nexys3): Half Play Speed
+	SW[08](Sword) or BTND(Nexys3): Set the VGA's resolution by Switch[3:0]
+	Switch[7]: System Pause (entering debug mode, see debug.txt for more detail)
 	7-Segment Display: Show current frame number
 
 

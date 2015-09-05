@@ -167,14 +167,14 @@ module wb_spi (
 		end
 		else if (wbs_cs_i & ~wbs_ack_o) begin
 			case (wbs_addr_i)
-				14'h0: begin
+				0: begin
 					wbs_data_o <= {spi_en, 27'b0, buf_of, buf_uf, buf_full, tx_empty};
 				end
-				14'h1: begin
+				1: begin
 					wbs_data_o[31:16] <= rx_left;
 					wbs_data_o[15:0] <= tx_left;
 				end
-				14'h2: begin
+				2: begin
 					wbs_data_o <= reg_mode;
 					if (wbs_we_i) begin
 						spi_rst <= 1;
@@ -188,7 +188,7 @@ module wb_spi (
 							reg_mode[7:0] <= wbs_data_i[7:0];
 					end
 				end
-				14'h3: begin
+				3: begin
 					wbs_data_o <= {24'h0, din};
 					dout <= wbs_data_i[7:0]; // sel_i are ignored
 					if (wbs_we_i)

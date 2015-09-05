@@ -118,10 +118,10 @@ module wb_ps2 (
 		end
 		else if (wbs_cs_i & ~wbs_ack_o) begin
 			case (wbs_addr_i)
-				14'h0: begin
+				0: begin
 					wbs_data_o <= {rx_busy, tx_busy, 27'b0, data_valid, rx_error, tx_error};
 				end
-				14'h3: begin
+				3: begin
 					wbs_data_o <= {24'h0, din};
 					dout <= wbs_data_i[7:0]; // sel_i are ignored
 					if (wbs_we_i)

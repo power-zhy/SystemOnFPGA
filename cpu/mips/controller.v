@@ -84,9 +84,9 @@ module controller (
 					end
 					R_FUNC_SRA: begin
 						exe_alu_oper = EXE_ALU_SRL;
+						exe_signed = 1;
 						wb_addr_src = WB_ADDR_RD;
 						wb_data_src = WB_DATA_ALU;
-						exe_signed = 1;
 						wb_wen = 1;
 						rt_used = 1;
 					end
@@ -108,9 +108,9 @@ module controller (
 					end
 					R_FUNC_SRAV: begin
 						exe_alu_oper = EXE_ALU_SRLV;
+						exe_signed = 1;
 						wb_addr_src = WB_ADDR_RD;
 						wb_data_src = WB_DATA_ALU;
-						exe_signed = 1;
 						wb_wen = 1;
 						rs_used = 1;
 						rt_used = 1;

@@ -1,0 +1,24 @@
+Debug function is enabled by default.
+
+SW[7]: debug enable/disable
+
+when in debug mode:
+SW[8]: debug step
+SW[9]: display switch (between debug info and normal info)
+SW[6:0]: show inner data
+	7'b00xxxxx: content of general purpose register 5'bxxxxx
+	7'b01xxxxx: content of registers in pipeline datapath
+		5'h00: instruction address in IF
+		5'h01: instruction content in IF
+		5'h02: instruction address in ID
+		5'h03: instruction content in ID
+		5'h04: instruction address in EXE
+		5'h05: instruction content in EXE
+		5'h06: instruction address in MEM
+		5'h07: instruction content in MEM
+		5'h08: BIT0 for memory write signal, BIT4 for memory read signal, BIT12 for instruction read signal
+		5'h09: memory operation address
+		5'h10: content read from memory (when read signal enables)
+		5'h11: content write to memory (when write signal enables)
+	7'b10xxxxx: content of register 5'bxxxxx in co-processor 0
+	7'b11xxxxx: reversed

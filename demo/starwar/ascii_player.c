@@ -151,11 +151,10 @@ void init_vga(uint32 mode, uint32 addr) {
 	config[3] = 0;
 }
 
-void disp_num(uint16 number) {
+void disp_num(uint32 number) {
 	volatile uint32* config = (uint32*)BOARD_ADDR;
-	uint32 data = number << 16;
-	data += 0x0000F000;
-	config[1] = data;
+	config[6] = number;
+	config[7] = 0x0000FF00;
 }
 
 int32 find_frame(uint32 backward) {

@@ -38,9 +38,9 @@ localparam
 
 // EXE CP operations
 localparam
-	EXE_CP_NONE    = 0,
-	EXE_CP_STORE   = 1,
-	EXE_CP0_ERET   = 2;
+	EXE_CP_NONE   = 0,
+	EXE_CP_STORE  = 1,
+	EXE_CP0_ERET  = 2;
 
 // WB address sources
 localparam

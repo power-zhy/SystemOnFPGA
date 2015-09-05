@@ -81,10 +81,10 @@ module wb_board_nexys3 (
 		end
 		else if (wbs_cs_i & ~wbs_ack_o) begin
 			case (wbs_addr_i)
-				14'h0: begin
+				0: begin
 					wbs_data_o <= reg_in;
 				end
-				14'h1: begin
+				1: begin
 					wbs_data_o <= reg_out;
 					if (wbs_we_i) begin
 						if (wbs_sel_i[3])

@@ -48,9 +48,9 @@ module test_ps2 (
 		) PS2_HOST (
 		.clk(clk),
 		.rst(rst),
-		.tx_en(cs_buf & we),
+		.tx_en(cs & we),
 		.tx_data(cmd),
-		.rx_en(cs_buf),
+		.rx_en(cs),
 		.rx_data(dout),
 		.tx_busy(tx_busy),
 		.rx_busy(rx_busy),

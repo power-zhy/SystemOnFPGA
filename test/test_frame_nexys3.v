@@ -136,7 +136,7 @@ module test_frame_nexys3 (
 		//mem_data = mem_oe_n ? mem_dout : {16{1'bz}},
 		mem_din = mem_data;
 	
-	/*
+	
 	// PSRAM test
 	test_psram_nexys3 #(
 		.CLK_FREQ(CLK_FREQ_MEM)
@@ -166,7 +166,7 @@ module test_frame_nexys3 (
 		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define RAM_SIG
-	*/
+	
 	/*
 	// PPCM test
 	test_ppcm_nexys3 #(
@@ -237,7 +237,7 @@ module test_frame_nexys3 (
 	`define DISPLAY_SIG
 	`define KEYBOARD_SIG
 	*/
-	
+	/*
 	// UART test
 	test_uart #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -257,7 +257,7 @@ module test_frame_nexys3 (
 		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define UART_SIG
-	
+	*/
 	
 	// default value for signals
 	`ifndef DISPLAY_SIG
