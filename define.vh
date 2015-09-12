@@ -9,3 +9,5 @@
 //`define NO_MMU  // disable memory management unit
 //`define NO_IC  // disable instruction cache
 //`define NO_DC  // disable data cache
+
+`define NO_PS2_WRITE

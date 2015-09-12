@@ -230,7 +230,7 @@ module test_frame_sword (
 		);
 	`define FLASH_SIG
 	*/
-	
+	/*
 	// VGA test
 	test_vga #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -254,8 +254,8 @@ module test_frame_sword (
 		vga_green[0] = 0,
 		vga_blue[1:0] = 0;
 	`define VGA_SIG
+	*/
 	
-	/*
 	// KEYBOARD test
 	test_ps2 #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -272,7 +272,7 @@ module test_frame_sword (
 		.ps2_dat(keyboard_dat)
 		);
 	`define KEYBOARD_SIG
-	*/
+	
 	/*
 	test_uart #(
 		.CLK_FREQ(CLK_FREQ_DEV)

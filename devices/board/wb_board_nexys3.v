@@ -84,7 +84,7 @@ module wb_board_nexys3 (
 				0: begin
 					wbs_data_o <= reg_in;
 				end
-				1: begin
+				6: begin
 					wbs_data_o <= reg_out;
 					if (wbs_we_i) begin
 						if (wbs_sel_i[3])

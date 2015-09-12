@@ -82,6 +82,7 @@ module ps2_host (
 		next_clk_count = clk_count + 1'h1;
 		case (state)
 			S_DELAY: begin
+				`ifndef NO_PS2_WRITE
 				if (clk_count == CLK_COUNT) begin
 					next_clk_count = 0;
 					next_state = S_IDLE;
@@ -90,6 +91,9 @@ module ps2_host (
 					next_clk_count = clk_count + 1'h1;
 					next_state = S_DELAY;
 				end
+				`else
+				next_state = S_IDLE;
+				`endif
 			end
 			S_IDLE: begin
 				next_clk_count = 0;
@@ -255,6 +259,9 @@ module ps2_host (
 				rx_ack <= 1;
 			end
 		endcase
+		`ifdef NO_PS2_WRITE
+		clk_hold <= 0;
+		`endif
 	end
 	
 	assign

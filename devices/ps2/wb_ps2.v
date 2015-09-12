@@ -24,8 +24,6 @@ module wb_ps2 (
 	output reg interrupt
 	);
 	
-	`define NO_PS2_WRITE
-	
 	parameter
 		CLK_FREQ = 100;  // main clock frequency in MHz, should be multiple of 10M
 	parameter

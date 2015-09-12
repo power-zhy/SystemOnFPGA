@@ -73,14 +73,14 @@ module SystemOnFPGA_Sword (
 	
 	localparam
 		CLK_FREQ_SYS = 100,
-		CLK_FREQ_BUS = 10,
-		CLK_FREQ_CPU = 10,
+		CLK_FREQ_BUS = 25,
+		CLK_FREQ_CPU = 25,
 		CLK_FREQ_MEM = 50,
 		CLK_FREQ_DEV = 25;
 	assign
 		clk_sys = clk_100m,
-		clk_bus = clk_10m,
-		clk_cpu = clk_10m,
+		clk_bus = clk_25m,
+		clk_cpu = clk_25m,
 		clk_mem = clk_50m,
 		clk_dev = clk_25m;  // should be multiple of 10M, which UART needs
 	
