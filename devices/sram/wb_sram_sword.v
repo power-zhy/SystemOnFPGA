@@ -2,19 +2,20 @@
 
 
 /**
- * SRAM device with wishbone connection interfaces, can be used up to 100MHz.
+ * SRAM device with wishbone connection interfaces, including read/write buffers.
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
 module wb_sram_sword (
-	input wire clk,  // main clock, should be faster then bus clock
+	input wire clk,  // main clock, should be faster than or equal to wishbone clock
 	input wire rst,  // synchronous reset
+	output wire ram_busy,  // busy flag
 	// SRAM interfaces
-	output reg sram_ce_n,
-	output reg sram_oe_n,
-	output reg sram_we_n,
-	output reg [ADDR_BITS-1:2] sram_addr,
+	output wire sram_ce_n,
+	output wire sram_oe_n,
+	output wire sram_we_n,
+	output wire [ADDR_BITS-1:2] sram_addr,
 	input wire [47:0] sram_din,
-	output reg [47:0] sram_dout,
+	output wire [47:0] sram_dout,
 	// wishbone slave interfaces
 	input wire wbs_clk_i,
 	input wire wbs_cyc_i,
@@ -25,92 +26,84 @@ module wb_sram_sword (
 	input wire [3:0] wbs_sel_i,
 	input wire wbs_we_i,
 	input wire [31:0] wbs_data_i,
-	output reg [31:0] wbs_data_o,
-	output reg wbs_ack_o
+	output wire [31:0] wbs_data_o,
+	output wire wbs_ack_o,
+	output wire wbs_err_o
 	);
 	
 	parameter
-		ADDR_BITS = 22,  // address length for PSRAM
-		HIGH_ADDR = 10'h000;  // high address value, as the address length of wishbone is larger than device
+		CLK_FREQ = 100;  // main clock frequency in MHz
 	parameter
-		BURST_CTI = 3'b010,
-		BURST_BTE = 2'b00;
+		ADDR_BITS = 22,  // address length for SRAM
+		HIGH_ADDR = 10'h000,  // high address value, as the address length of wishbone is larger than device
+		BUF_ADDR_BITS = 4;  // address length for buffer
 	
-	wire cs, burst;
-	assign
-		cs = wbs_cyc_i & wbs_stb_i & wbs_addr_i[31:ADDR_BITS] == HIGH_ADDR,
-		burst = (wbs_cti_i == BURST_CTI) & (wbs_bte_i == BURST_BTE) & (wbs_sel_i == 4'b1111);
+	wire cs;
+	wire we;
+	wire [ADDR_BITS-1:2] addr;
+	wire [3:0] sel;
+	wire burst;
+	wire [31:0] din;
+	wire [31:0] dout;
+	wire busy;
+	wire ack;
 	
-	reg burst_buf;
-	always @(posedge wbs_clk_i) begin
-		if (rst)
-			burst_buf <= 0;
-		else
-			burst_buf <= burst;
-	end
+	// core
+	sram_core_sword #(
+		.CLK_FREQ(CLK_FREQ),
+		.ADDR_BITS(ADDR_BITS)
+		) SRAM_CORE (
+		.clk(clk),
+		.rst(rst),
+		.cs(cs),
+		.we(we),
+		.addr(addr),
+		.sel(sel),
+		.burst(burst),
+		.din(din),
+		.dout(dout),
+		.busy(busy),
+		.ack(ack),
+		.sram_ce_n(sram_ce_n),
+		.sram_oe_n(sram_oe_n),
+		.sram_we_n(sram_we_n),
+		.sram_addr(sram_addr),
+		.sram_din(sram_din),
+		.sram_dout(sram_dout)
+		);
 	
-	localparam
-		S_READ = 0,
-		S_WRITE = 1;
-	
-	reg state = 0;
-	reg next_state;
-	reg [31:0] read_buf;
-	
-	always @(*) begin
-		sram_ce_n = ~cs;
-		sram_oe_n = 0;
-		sram_we_n = 1;
-		sram_addr = burst_buf ? wbs_addr_i[ADDR_BITS-1:2] + 1'h1 : wbs_addr_i[ADDR_BITS-1:2];
-		sram_dout = 0;
-		next_state = S_READ;
-		if (cs) case (state)
-			S_READ: begin
-				sram_oe_n = 0;
-				sram_we_n = 1;
-				sram_dout[31:0] = 0;
-				if (wbs_we_i)
-					next_state = S_WRITE;
-				else
-					next_state = S_READ;
-			end
-			S_WRITE: begin
-				sram_oe_n = 1;
-				sram_we_n = 0;
-				sram_dout[31:24] = wbs_sel_i[3] ? wbs_data_i[31:24] : read_buf[31:24];
-				sram_dout[23:16] = wbs_sel_i[2] ? wbs_data_i[23:16] : read_buf[23:16];
-				sram_dout[15:8] = wbs_sel_i[1] ? wbs_data_i[15:8] : read_buf[15:8];
-				sram_dout[7:0] = wbs_sel_i[0] ? wbs_data_i[7:0] : read_buf[7:0];
-				next_state = S_READ;
-			end
-		endcase
-	end
-	
-	always @(posedge clk) begin
-		if (rst)
-			state = S_READ;
-		else
-			state = next_state;
-	end
-	
-	always @(posedge clk) begin
-		if (rst) begin
-			read_buf <= 0;
-		end
-		else case (state)
-			S_READ: read_buf <= sram_din[31:0];
-			default: read_buf <= 0;
-		endcase
-	end
-	
-	always @(posedge wbs_clk_i) begin
-		wbs_data_o <= 0;
-		wbs_ack_o <= 0;
-		if (~rst && cs) begin
-			if (~wbs_we_i)
-				wbs_data_o <= sram_din[31:0];
-			wbs_ack_o <= 1;
-		end
-	end
+	// adapter
+	wb_mem_adapter #(
+		.ADDR_BITS(ADDR_BITS),
+		.HIGH_ADDR(HIGH_ADDR),
+		.BUF_ADDR_BITS(BUF_ADDR_BITS),
+		.BURST_CTI(3'b010),
+		.BURST_BTE(2'b00)
+		) SRAM_ADAPTER (
+		.rst(rst),
+		.busy(ram_busy),
+		.wbs_clk_i(wbs_clk_i),
+		.wbs_cyc_i(wbs_cyc_i),
+		.wbs_stb_i(wbs_stb_i),
+		.wbs_addr_i(wbs_addr_i),
+		.wbs_cti_i(wbs_cti_i),
+		.wbs_bte_i(wbs_bte_i),
+		.wbs_sel_i(wbs_sel_i),
+		.wbs_we_i(wbs_we_i),
+		.wbs_data_i(wbs_data_i),
+		.wbs_data_o(wbs_data_o),
+		.wbs_ack_o(wbs_ack_o),
+		.wbs_err_o(wbs_err_o),
+		.mem_clk(clk),
+		.mem_cs(cs),
+		.mem_we(we),
+		.mem_addr(addr),
+		.mem_sel(sel),
+		.mem_burst(burst),
+		.mem_din(din),
+		.mem_dout(dout),
+		.mem_busy(busy),
+		.mem_ack(ack)
+		);
 	
 endmodule

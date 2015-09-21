@@ -76,13 +76,13 @@ module SystemOnFPGA_Sword (
 		CLK_FREQ_BUS = 25,
 		CLK_FREQ_CPU = 25,
 		CLK_FREQ_MEM = 50,
-		CLK_FREQ_DEV = 25;
+		CLK_FREQ_DEV = 50;
 	assign
 		clk_sys = clk_100m,
 		clk_bus = clk_25m,
 		clk_cpu = clk_25m,
 		clk_mem = clk_50m,
-		clk_dev = clk_25m;  // should be multiple of 10M, which UART needs
+		clk_dev = clk_50m;  // should be multiple of 10M, which UART needs
 	
 	// wishbone master - VRAM
 	wire vram_cyc_o;
@@ -434,9 +434,7 @@ module SystemOnFPGA_Sword (
 	
 	wb_sram_sword #(
 		.ADDR_BITS(22),
-		.HIGH_ADDR(10'h0),
-		.BURST_CTI(3'b010),
-		.BURST_BTE(2'b00)
+		.HIGH_ADDR(10'h0)
 		) WB_SRAM (
 		.clk(clk_mem),
 		.rst(1'b0),
@@ -694,9 +692,9 @@ module SystemOnFPGA_Sword (
 		.wbs_ack_o(vga_ack_o)
 		);
 	assign
-		vga_red[0] = 0,
-		vga_green[0] = 0,
-		vga_blue[1:0] = 0;
+		vga_red[0] = vga_red[3],
+		vga_green[0] = vga_green[3],
+		vga_blue[1:0] = vga_blue[3:2];
 	`else
 	assign
 		vram_cyc_o = 0,

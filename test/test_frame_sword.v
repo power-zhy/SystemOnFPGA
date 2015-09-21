@@ -179,13 +179,11 @@ module test_frame_sword (
 		//flash_data = flash_oe_n ? flash_dout : {32{1'bz}},
 		flash_din = flash_data;
 	
-	/*
+	
 	// SRAM test
 	test_sram_sword #(
 		.CLK_FREQ(CLK_FREQ_MEM),
-		.ADDR_BITS(22),
-		.BURST_CTI(3'b010),
-		.BURST_BTE(2'b00)
+		.ADDR_BITS(22)
 		) TEST_SRAM (
 		.clk(clk_mem),
 		.clk_bus(clk_bus),
@@ -203,7 +201,7 @@ module test_frame_sword (
 		.sram_dout(sram_dout)
 		);
 	`define SRAM_SIG
-	*/
+	
 	/*
 	// FLASH test
 	test_flash_sword #(
@@ -255,7 +253,7 @@ module test_frame_sword (
 		vga_blue[1:0] = 0;
 	`define VGA_SIG
 	*/
-	
+	/*
 	// KEYBOARD test
 	test_ps2 #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -272,7 +270,7 @@ module test_frame_sword (
 		.ps2_dat(keyboard_dat)
 		);
 	`define KEYBOARD_SIG
-	
+	*/
 	/*
 	test_uart #(
 		.CLK_FREQ(CLK_FREQ_DEV)
