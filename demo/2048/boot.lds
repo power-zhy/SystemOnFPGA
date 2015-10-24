@@ -9,18 +9,21 @@ SECTIONS {
 	.rodata : {
 		*(.rodata*)
 	}
-	PROVIDE (_realloc = ALIGN(4));
+	PROVIDE (_realloc = .);
 	. = 0x00000000;
 	PROVIDE (_data = .);
-	.data : AT((SIZEOF(.text)+SIZEOF(.rodata)+3) & ~(3)) {
+	.data : AT(SIZEOF(.text)+SIZEOF(.rodata)) {
 		*(.data)
 		*(.sdata)
 	}
 	PROVIDE (_edata = .);
 	PROVIDE (_bss = .);
-	.bss : AT((SIZEOF(.text)+SIZEOF(.rodata)+SIZEOF(.data)+7) & ~(3)) {
+	.bss : AT(SIZEOF(.text)+SIZEOF(.rodata)+SIZEOF(.data)) {
 		*(.bss)
 		*(.sbss)
 	}
 	PROVIDE (_ebss = .);
+	.MIPS.abiflags : {
+		*(.MIPS.abiflags)
+	}
 }

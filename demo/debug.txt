@@ -1,11 +1,20 @@
 Debug function is enabled by default.
 
-SW[7]: debug enable/disable
+LEDs show current bus status:
+	bit 6: MASTER_VRAM
+	bit 5: MASTER_ICMU
+	bit 4: MASTER_DCMU
+	bit 2: SLAVE_RAM
+	bit 1: SLAVE_ROM
+	bit 0: SLAVE_DEV
+
+Switch[7]: debug enable/disable
 
 when in debug mode:
-SW[8]: debug step
-SW[9]: display switch (between debug info and normal info)
-SW[6:0]: show inner data
+SW[08](Sword) or BTNR(Nexys3): debug step
+SW[09](Sword) or BTNU(Nexys3): display switch (between debug info and normal info)
+BTND(Nexys3): switch between high 16-bits and low 16-bits
+Switch[6:0]: show inner data
 	7'b00xxxxx: content of general purpose register 5'bxxxxx
 	7'b01xxxxx: content of registers in pipeline datapath
 		5'h00: instruction address in IF
