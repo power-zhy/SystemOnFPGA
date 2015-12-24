@@ -172,6 +172,7 @@ module psram_core_nexys3 (
 				busy <= 1;
 			end
 			S_CONFIG: begin
+				busy <= 1;
 				ram_ce_n <= 0;
 				ram_we_n <= 0;
 				ram_adv_n <= 0;

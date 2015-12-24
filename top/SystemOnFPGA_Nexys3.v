@@ -59,7 +59,6 @@ module SystemOnFPGA_Nexys3 (
 	//`define NO_KEYBOARD
 	//`define NO_SPI
 	//`define NO_UART
-	//`define SIMULATING
 	
 	// clock & reset
 	wire clk_100m, clk_50m, clk_25m, clk_10m;
@@ -729,7 +728,7 @@ module SystemOnFPGA_Nexys3 (
 		.interrupt(ir_board)
 		);
 	`else
-	wb_board WB_BOARD (
+	wb_board_nexys3 WB_BOARD (
 		.clk(clk_dev),
 		.rst(1'b0),
 		.switch(8'b0),

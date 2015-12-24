@@ -63,7 +63,6 @@ module SystemOnFPGA_Sword (
 	//`define NO_KEYBOARD
 	//`define NO_SPI
 	//`define NO_UART
-	//`define SIMULATING
 	
 	// clock & reset
 	wire clk_100m, clk_50m, clk_25m, clk_10m;
@@ -743,8 +742,7 @@ module SystemOnFPGA_Sword (
 		);
 	`else
 	wb_board_sword #(
-		.CLK_FREQ(CLK_FREQ_DEV),
-		.DEV_ADDR_BITS(DEV_SINGAL_ADDR_BITS)
+		.CLK_FREQ(CLK_FREQ_DEV)
 		) WB_BOARD_SWORD (
 		.clk(clk_dev),
 		.rst(1'b0),

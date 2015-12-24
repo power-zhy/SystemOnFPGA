@@ -144,8 +144,8 @@ module wb_memory_nexys3 (
 		);
 	
 	// control
-	reg curr, next;
-	reg working;
+	reg curr = 0, next = 0;
+	reg working = 0;
 	
 	always @(*) begin
 		if (ram_cyc_i)

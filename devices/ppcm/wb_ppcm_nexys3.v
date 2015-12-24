@@ -43,7 +43,7 @@ module wb_ppcm_nexys3 (
 	wire [ADDR_BITS-1:2] addr;
 	wire burst;
 	wire [31:0] dout;
-	wire busy;
+	wire adapter_busy, core_busy;
 	wire ack;
 	
 	// core
@@ -57,7 +57,7 @@ module wb_ppcm_nexys3 (
 		.addr(addr),
 		.burst(burst),
 		.dout(dout),
-		.busy(busy),
+		.busy(core_busy),
 		.ack(ack),
 		.pcm_ce_n(pcm_ce_n),
 		.pcm_rst_n(pcm_rst_n),
@@ -77,7 +77,7 @@ module wb_ppcm_nexys3 (
 		.BURST_BTE(2'b00)
 		) PPCM_ADAPTER (
 		.rst(rst),
-		.busy(pcm_busy),
+		.busy(adapter_busy),
 		.wbs_clk_i(wbs_clk_i),
 		.wbs_cyc_i(wbs_cyc_i),
 		.wbs_stb_i(wbs_stb_i),
@@ -98,8 +98,11 @@ module wb_ppcm_nexys3 (
 		.mem_burst(burst),
 		.mem_din(),
 		.mem_dout(dout),
-		.mem_busy(busy),
+		.mem_busy(core_busy),
 		.mem_ack(ack)
 		);
+	
+	assign
+		pcm_busy = adapter_busy | core_busy;
 	
 endmodule

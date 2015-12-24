@@ -45,7 +45,7 @@ module wb_flash_sword (
 	wire [ADDR_BITS-1:2] addr;
 	wire burst;
 	wire [31:0] dout;
-	wire busy;
+	wire adapter_busy, core_busy;
 	wire ack;
 	
 	// core
@@ -60,7 +60,7 @@ module wb_flash_sword (
 		.addr(addr),
 		.burst(burst),
 		.dout(dout[15:0]),
-		.busy(busy),
+		.busy(core_busy),
 		.ack(ack),
 		.flash_ce_n(flash_ce_n[0]),
 		.flash_rst_n(flash_rst_n),
@@ -106,7 +106,7 @@ module wb_flash_sword (
 		.BURST_BTE(2'b00)
 		) FLASH_ADAPTER (
 		.rst(rst),
-		.busy(flash_busy),
+		.busy(adapter_busy),
 		.wbs_clk_i(wbs_clk_i),
 		.wbs_cyc_i(wbs_cyc_i),
 		.wbs_stb_i(wbs_stb_i),
@@ -126,8 +126,11 @@ module wb_flash_sword (
 		.mem_burst(burst),
 		.mem_din(),
 		.mem_dout(dout),
-		.mem_busy(busy),
+		.mem_busy(core_busy),
 		.mem_ack(ack)
 		);
+	
+	assign
+		flash_busy = adapter_busy | core_busy;
 	
 endmodule

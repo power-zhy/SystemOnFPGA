@@ -51,7 +51,7 @@ module wb_psram_nexys3 (
 	wire burst;
 	wire [31:0] din;
 	wire [31:0] dout;
-	wire busy;
+	wire adapter_busy, core_busy;
 	wire ack;
 	
 	// core
@@ -68,7 +68,7 @@ module wb_psram_nexys3 (
 		.burst(burst),
 		.din(din),
 		.dout(dout),
-		.busy(busy),
+		.busy(core_busy),
 		.ack(ack),
 		.ram_ce_n(ram_ce_n),
 		.ram_clk(ram_clk),
@@ -93,7 +93,7 @@ module wb_psram_nexys3 (
 		.BURST_BTE(2'b00)
 		) PSRAM_ADAPTER (
 		.rst(rst),
-		.busy(ram_busy),
+		.busy(adapter_busy),
 		.wbs_clk_i(wbs_clk_i),
 		.wbs_cyc_i(wbs_cyc_i),
 		.wbs_stb_i(wbs_stb_i),
@@ -114,8 +114,11 @@ module wb_psram_nexys3 (
 		.mem_burst(burst),
 		.mem_din(din),
 		.mem_dout(dout),
-		.mem_busy(busy),
+		.mem_busy(core_busy),
 		.mem_ack(ack)
 		);
+	
+	assign
+		ram_busy = adapter_busy | core_busy;
 	
 endmodule
