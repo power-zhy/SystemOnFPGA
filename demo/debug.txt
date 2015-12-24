@@ -27,7 +27,7 @@ Switch[6:0]: show inner data
 		5'h07: instruction content in MEM
 		5'h08: BIT0 for memory write signal, BIT4 for memory read signal, BIT12 for instruction read signal
 		5'h09: memory operation address
-		5'h10: content read from memory (when read signal enables)
-		5'h11: content write to memory (when write signal enables)
+		5'h0A: content read from memory (when read signal enables)
+		5'h0B: content write to memory (when write signal enables)
 	7'b10xxxxx: content of register 5'bxxxxx in co-processor 0
 	7'b11xxxxx: reversed

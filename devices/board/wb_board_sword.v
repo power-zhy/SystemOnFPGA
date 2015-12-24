@@ -62,7 +62,7 @@ module wb_board_sword (
 	reg [7:0] reg_en = 0;
 	reg [7:0] reg_dot = 0;
 	
-	// matrix keyboard scan
+	// button matrix scan
 	reg [COUNT_BITS-1:0] clk_count = 0;
 	
 	always @(posedge clk) begin

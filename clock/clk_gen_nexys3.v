@@ -15,7 +15,6 @@ module clk_gen_nexys3 (
 	);
 	
 	wire clk_pad_buf;
-	wire rst_buf;
 	wire clk_100m_unbuf;
 	wire clk_50m_unbuf;
 	wire clk_25m_unbuf;

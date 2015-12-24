@@ -237,7 +237,7 @@ module SystemOnFPGA_Sword (
 	assign
 		switch_buf = switch,
 		btn_y_buf = btn_y,
-		rst_buf = rst;
+		rst_buf = ~rst_n;
 	`endif
 	
 	// clock generator
