@@ -33,7 +33,7 @@ module rom (
 		WORD_BITS = 8 * WORD_BYTES;  // 32
 	
 	reg [WORD_BITS-1:0] data [0:(1<<(ADDR_BITS-2))-1];
-	//initial begin $readmemh("test.hex", data); end
+	initial begin $readmemh("test.hex", data); end
 	
 	wire [ADDR_BITS-1:2] addr_buf;
 	wire wbs_cs, wbs_burst;

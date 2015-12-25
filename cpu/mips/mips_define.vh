@@ -10,12 +10,16 @@ localparam
 // EXE A sources
 localparam
 	EXE_A_RS   = 0,
-	EXE_A_CP   = 1;
+	EXE_A_SA   = 1,
+	EXE_A_LINK = 2,
+	EXE_A_CP   = 3;
 
 // EXE B sources
 localparam
 	EXE_B_RT   = 0,
-	EXE_B_IMM  = 1;
+	EXE_B_IMM  = 1,
+	EXE_B_LINK = 2,
+	EXE_B_ZERO = 3;
 
 // EXE ALU operations
 localparam
@@ -28,12 +32,12 @@ localparam
 	EXE_ALU_XOR    = 6,
 	EXE_ALU_NOR    = 7,
 	EXE_ALU_SLL    = 8,
-	EXE_ALU_SRL    = 9,  // including ROTR(set bit 21) and SRA(set sign)
-	//EXE_ALU_ROTR   = 10,
+	EXE_ALU_SRL    = 9,  // including SRA(set sign)
+	EXE_ALU_ROTR   = 10,
 	//EXE_ALU_SRA    = 11,
 	EXE_ALU_SLLV   = 12,
-	EXE_ALU_SRLV   = 13;  // including ROTRV(set bit 6) and SRAV(set sign)
-	//EXE_ALU_ROTRV  = 14,
+	EXE_ALU_SRLV   = 13,  // including SRAV(set sign)
+	EXE_ALU_ROTRV  = 14;
 	//EXE_ALU_SRAV   = 15;
 
 // EXE CP operations
@@ -52,8 +56,7 @@ localparam
 localparam
 	WB_DATA_ALU   = 0,
 	WB_DATA_MEM   = 1,
-	WB_DATA_LINK  = 2,
-	WB_DATA_REGA  = 3;
+	WB_DATA_LINK  = 2;  // same as WB_DATA_ALU
 
 // exception codes
 localparam

@@ -71,8 +71,8 @@ module mips_core (
 	
 	wire [1:0] pc_src_ctrl;
 	wire imm_ext_ctrl;
-	wire exe_a_src_ctrl;
-	wire exe_b_src_ctrl;
+	wire [1:0] exe_a_src_ctrl;
+	wire [1:0] exe_b_src_ctrl;
 	wire [3:0] exe_alu_oper_ctrl;
 	wire [1:0] exe_cp_oper_ctrl;
 	wire exe_signed_ctrl;
@@ -83,7 +83,6 @@ module mips_core (
 	wire [1:0] wb_addr_src_ctrl;
 	wire [1:0] wb_data_src_ctrl;
 	wire wb_wen_ctrl;
-	wire is_jump_ctrl;
 	
 	wire [31:0] data_rs_ctrl, data_rt_ctrl;
 	wire rs_used_ctrl, rt_used_ctrl;
@@ -94,7 +93,7 @@ module mips_core (
 	wire id_rst, id_en, id_valid;
 	wire exe_rst, exe_en, exe_valid;
 	wire mem_rst, mem_en, mem_valid;
-	wire wb_en;
+	wire wb_rst, wb_en, wb_valid;
 	
 	// exception signals
 	wire inst_illegal, inst_unrecognize;
@@ -134,7 +133,6 @@ module mips_core (
 		.wb_addr_src(wb_addr_src_ctrl),
 		.wb_data_src(wb_data_src_ctrl),
 		.wb_wen(wb_wen_ctrl),
-		.is_jump(is_jump_ctrl),
 		.is_delay_slot(is_delay_slot),
 		.is_privilege(is_privilege),
 		.syscall(syscall),
@@ -172,7 +170,6 @@ module mips_core (
 		.wb_addr_src_ctrl(wb_addr_src_ctrl),
 		.wb_data_src_ctrl(wb_data_src_ctrl),
 		.wb_wen_ctrl(wb_wen_ctrl),
-		.is_jump_ctrl(is_jump_ctrl),
 		.if_rst(if_rst),
 		.if_en(if_en),
 		.if_valid(if_valid),
@@ -205,7 +202,9 @@ module mips_core (
 		.mem_din(mem_din),
 		.inst_addr_mem(inst_addr_mem),
 		.inst_data_mem(inst_data_mem),
+		.wb_rst(wb_rst),
 		.wb_en(wb_en),
+		.wb_valid(wb_valid),
 		.exception(exception),
 		.exception_target(exception_target)
 	);
@@ -266,7 +265,9 @@ module mips_core (
 		.mem_rst(mem_rst),
 		.mem_en(mem_en),
 		.mem_valid(mem_valid),
+		.wb_rst(wb_rst),
 		.wb_en(wb_en),
+		.wb_valid(wb_valid),
 		.mmu_inv(mmu_inv),
 		.sr(sr),
 		.ear(ear),

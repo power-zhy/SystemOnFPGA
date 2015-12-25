@@ -20,8 +20,8 @@ module datapath (
 	input wire rt_used_ctrl,  // whether RT is used
 	input wire [1:0] pc_src_ctrl,  // how would PC change to next
 	input wire imm_ext_ctrl,  // whether using sign extended to immediate data
-	input wire exe_a_src_ctrl,  // data source of operand A for ALU
-	input wire exe_b_src_ctrl,  // data source of operand B for ALU
+	input wire [1:0] exe_a_src_ctrl,  // data source of operand A for ALU
+	input wire [1:0] exe_b_src_ctrl,  // data source of operand B for ALU
 	input wire [3:0] exe_alu_oper_ctrl,  // ALU operation type
 	input wire [1:0] exe_cp_oper_ctrl,  // co-processor operation type
 	input wire exe_signed_ctrl,  // whether regard operands as signed data in ALU
@@ -32,7 +32,6 @@ module datapath (
 	input wire [1:0] wb_addr_src_ctrl,  // address source to write data back to registers
 	input wire [1:0] wb_data_src_ctrl,  // data source of data being written back to registers
 	input wire wb_wen_ctrl,  // register write enable signal
-	input wire is_jump_ctrl,  // whether current instruction is a jump instruction
 	// IF signals
 	input wire if_rst,  // stage reset signal
 	input wire if_en,  // stage enable signal
@@ -70,7 +69,9 @@ module datapath (
 	output reg [31:0] inst_addr_mem,  // instruction address in MEM stage
 	output reg [31:0] inst_data_mem,  // instruction content in MEM stage
 	// WB signals
+	input wire wb_rst,
 	input wire wb_en,
+	output reg wb_valid,
 	// exception
 	input wire exception,  // exception occurred signal
 	input wire [31:0] exception_target  // target instruction address when exception occurred
@@ -79,6 +80,7 @@ module datapath (
 	`include "mips_define.vh"
 	
 	// control signals
+	reg [1:0] exe_a_src_exe, exe_b_src_exe;
 	reg [3:0] exe_alu_oper_exe;
 	reg [1:0] exe_cp_oper_exe;
 	reg exe_signed_exe;
@@ -87,7 +89,7 @@ module datapath (
 	reg mem_ren_exe, mem_ren_mem;
 	reg mem_wen_exe, mem_wen_mem;
 	reg [1:0] wb_data_src_exe, wb_data_src_mem, wb_data_src_wb;
-	reg wb_wen_exe, wb_wen_mem;
+	reg wb_wen_exe, wb_wen_mem, wb_wen_wb;
 	
 	// IF signals
 	wire [31:0] inst_addr_next;
@@ -96,8 +98,7 @@ module datapath (
 	reg [31:0] inst_addr_id;
 	reg [31:0] inst_addr_next_id;
 	reg [4:0] regw_addr_id;
-	reg [31:0] opa_id, opb_id;
-	wire [4:0] addr_rs, addr_rt;
+	wire [4:0] addr_rs, addr_rt, addr_rd;
 	wire [31:0] data_rs, data_rt, data_imm;
 	
 	// EXE signals
@@ -105,16 +106,20 @@ module datapath (
 	reg [31:0] inst_data_exe;
 	reg [31:0] inst_addr_next_exe;
 	reg [4:0] regw_addr_exe;
-	reg [31:0] opa_exe, opb_exe, data_rt_exe;
+	reg [31:0] opa_exe, opb_exe;
+	reg [31:0] data_rs_exe, data_rt_exe, data_imm_exe, cp_data_exe;
 	wire [31:0] alu_out_exe;
 	
 	// MEM signals
 	reg [4:0] regw_addr_mem;
-	reg [31:0] opa_mem, data_rt_mem;
+	reg [31:0] data_rt_mem;
 	reg [31:0] alu_out_mem;
 	
 	// WB signals
-	reg [31:0] regw_data;
+	reg [31:0] alu_out_wb;
+	reg [31:0] mem_din_wb;
+	reg [4:0] regw_addr_wb;
+	reg [31:0] regw_data_wb;
 	
 	// debug
 	`ifdef DEBUG
@@ -165,8 +170,8 @@ module datapath (
 			case (pc_src_ctrl)
 				PC_NEXT: inst_addr <= inst_addr_next;
 				PC_JUMP: inst_addr <= {inst_addr_id[31:28], inst_data_ctrl[25:0], 2'b0};
-				PC_JR: inst_addr <= opa_id;
-				PC_BRANCH: inst_addr <= inst_addr_next_id + data_imm;
+				PC_JR: inst_addr <= data_rs_ctrl;
+				PC_BRANCH: inst_addr <= inst_addr_next_id + {data_imm[29:0], 2'b0};
 				default: inst_addr <= 0;
 			endcase
 		end
@@ -191,13 +196,15 @@ module datapath (
 	assign
 		addr_rs = inst_data_ctrl[25:21],
 		addr_rt = inst_data_ctrl[20:16],
-		data_imm = is_jump_ctrl ? {{14{inst_data_ctrl[15]}}, inst_data_ctrl[15:0], 2'b0} : (imm_ext_ctrl ? {{16{inst_data_ctrl[15]}}, inst_data_ctrl[15:0]} : {16'b0, inst_data_ctrl[15:0]});
+		addr_rd = inst_data_ctrl[15:11],
+		cp_addr_r = inst_data_ctrl[15:11],
+		data_imm = imm_ext_ctrl ? {{16{inst_data_ctrl[15]}}, inst_data_ctrl[15:0]} : {16'b0, inst_data_ctrl[15:0]};
 	
 	always @(*) begin
 		regw_addr_id = inst_data_ctrl[15:11];
 		case (wb_addr_src_ctrl)
-			WB_ADDR_RD: regw_addr_id = inst_data_ctrl[15:11];
-			WB_ADDR_RT: regw_addr_id = inst_data_ctrl[20:16];
+			WB_ADDR_RD: regw_addr_id = addr_rd;
+			WB_ADDR_RT: regw_addr_id = addr_rt;
 			WB_ADDR_LINK: regw_addr_id = GPR_RA;
 		endcase
 	end
@@ -215,9 +222,9 @@ module datapath (
 		.data_a(data_rs),
 		.addr_b(addr_rt),
 		.data_b(data_rt),
-		.en_w(wb_wen_mem & wb_en),
-		.addr_w(regw_addr_mem),
-		.data_w(regw_data)
+		.en_w(wb_wen_wb),
+		.addr_w(regw_addr_wb),
+		.data_w(regw_data_wb)
 		);
 	
 	always @(*) begin  // use forwarding to reduce stall frequency
@@ -229,16 +236,14 @@ module datapath (
 				case (wb_data_src_exe)
 					WB_DATA_ALU: data_rs_ctrl = alu_out_exe;
 					WB_DATA_MEM: reg_stall = 1;
-					WB_DATA_LINK: data_rs_ctrl = inst_addr_next_id;
-					WB_DATA_REGA: data_rs_ctrl = opa_exe;
+					WB_DATA_LINK: data_rs_ctrl = alu_out_exe;
 				endcase
 			end
 			else if (regw_addr_mem == addr_rs && wb_wen_mem) begin
 				case (wb_data_src_mem)
 					WB_DATA_ALU: data_rs_ctrl = alu_out_mem;
-					WB_DATA_MEM: data_rs_ctrl = mem_din;
-					WB_DATA_LINK: data_rs_ctrl = inst_addr_next_exe;
-					WB_DATA_REGA: data_rs_ctrl = opa_mem;
+					WB_DATA_MEM: reg_stall = 1;
+					WB_DATA_LINK: data_rs_ctrl = alu_out_mem;
 				endcase
 			end
 		end
@@ -247,35 +252,17 @@ module datapath (
 				case (wb_data_src_exe)
 					WB_DATA_ALU: data_rt_ctrl = alu_out_exe;
 					WB_DATA_MEM: reg_stall = 1;
-					WB_DATA_LINK: data_rt_ctrl = inst_addr_next_id;
-					WB_DATA_REGA: data_rt_ctrl = opa_exe;
+					WB_DATA_LINK: data_rt_ctrl = alu_out_exe;
 				endcase
 			end
 			else if (regw_addr_mem == addr_rt && wb_wen_mem) begin
 				case (wb_data_src_mem)
 					WB_DATA_ALU: data_rt_ctrl = alu_out_mem;
-					WB_DATA_MEM: data_rt_ctrl = mem_din;
-					WB_DATA_LINK: data_rt_ctrl = inst_addr_next_exe;
-					WB_DATA_REGA: data_rt_ctrl = opa_mem;
+					WB_DATA_MEM: reg_stall = 1;
+					WB_DATA_LINK: data_rt_ctrl = alu_out_mem;
 				endcase
 			end
 		end
-	end
-	
-	assign
-		cp_addr_r = inst_data_ctrl[15:11];
-	
-	always @(*) begin
-		opa_id = data_rs_ctrl;
-		opb_id = data_rt_ctrl;
-		case (exe_a_src_ctrl)
-			EXE_A_RS: opa_id = data_rs_ctrl;
-			EXE_A_CP: opa_id = cp_data_r;
-		endcase
-		case (exe_b_src_ctrl)
-			EXE_B_RT: opb_id = data_rt_ctrl;
-			EXE_B_IMM: opb_id = data_imm;
-		endcase
 	end
 	
 	// EXE stage
@@ -286,9 +273,12 @@ module datapath (
 			inst_data_exe <= 0;
 			inst_addr_next_exe <= 0;
 			regw_addr_exe <= 0;
-			opa_exe <= 0;
-			opb_exe <= 0;
+			data_rs_exe <= 0;
 			data_rt_exe <= 0;
+			data_imm_exe <= 0;
+			cp_data_exe <= 0;
+			exe_a_src_exe <= 0;
+			exe_b_src_exe <= 0;
 			exe_alu_oper_exe <= 0;
 			exe_cp_oper_exe <= 0;
 			exe_signed_exe <= 0;
@@ -305,9 +295,12 @@ module datapath (
 			inst_data_exe <= inst_data_ctrl;
 			inst_addr_next_exe <= inst_addr_next_id;
 			regw_addr_exe <= regw_addr_id;
-			opa_exe <= opa_id;
-			opb_exe <= opb_id;
+			data_rs_exe <= data_rs_ctrl;
 			data_rt_exe <= data_rt_ctrl;
+			data_imm_exe <= data_imm;
+			cp_data_exe <= cp_data_r;
+			exe_a_src_exe <= exe_a_src_ctrl;
+			exe_b_src_exe <= exe_b_src_ctrl;
 			exe_alu_oper_exe <= exe_alu_oper_ctrl;
 			exe_cp_oper_exe <= exe_cp_oper_ctrl;
 			exe_signed_exe <= exe_signed_ctrl;
@@ -320,13 +313,29 @@ module datapath (
 		end
 	end
 	
+	always @(*) begin
+		opa_exe = data_rs_exe;
+		opb_exe = data_rt_exe;
+		case (exe_a_src_exe)
+			EXE_A_RS: opa_exe = data_rs_exe;
+			EXE_A_SA: opa_exe = {27'b0, inst_data_exe[10:6]};
+			EXE_A_LINK: opa_exe = inst_addr_next_exe;
+			EXE_A_CP: opa_exe = cp_data_exe;
+		endcase
+		case (exe_b_src_exe)
+			EXE_B_RT: opb_exe = data_rt_exe;
+			EXE_B_IMM: opb_exe = data_imm_exe;
+			EXE_B_LINK: opb_exe = 32'h4;  // linked address is the next one of the delay slot
+			EXE_B_ZERO: opb_exe = 32'h0;
+		endcase
+	end
+	
 	assign
 		cp_oper = exe_cp_oper_exe,
 		cp_addr_w = inst_data_exe[15:11],
 		cp_data_w = opb_exe;
 	
 	alu ALU (
-		.inst(inst_data_exe),
 		.a(opa_exe),
 		.b(opb_exe),
 		.sign(exe_signed_exe),
@@ -344,7 +353,6 @@ module datapath (
 			inst_addr_mem <= 0;
 			inst_data_mem <= 0;
 			regw_addr_mem <= 0;
-			opa_mem <= 0;
 			data_rt_mem <= 0;
 			alu_out_mem <= 0;
 			mem_type_mem <= 0;
@@ -359,7 +367,6 @@ module datapath (
 			inst_addr_mem <= inst_addr_exe;
 			inst_data_mem <= inst_data_exe;
 			regw_addr_mem <= regw_addr_exe;
-			opa_mem <= opa_exe;
 			data_rt_mem <= data_rt_exe;
 			alu_out_mem <= alu_out_exe;
 			mem_type_mem <= mem_type_exe;
@@ -380,13 +387,31 @@ module datapath (
 		mem_dout = data_rt_mem;
 	
 	// WB stage
+	always @(posedge clk) begin
+		if (wb_rst) begin
+			wb_valid <= 0;
+			wb_wen_wb <= 0;
+			wb_data_src_wb <= 0;
+			regw_addr_wb <= 0;
+			alu_out_wb <= 0;
+			mem_din_wb <= 0;
+		end
+		else if (wb_en) begin
+			wb_valid <= mem_valid;
+			wb_wen_wb <= wb_wen_mem;
+			wb_data_src_wb <= wb_data_src_mem;
+			regw_addr_wb <= regw_addr_mem;
+			alu_out_wb <= alu_out_mem;
+			mem_din_wb <= mem_din;
+		end
+	end
+	
 	always @(*) begin
-		regw_data = alu_out_mem;
-		case (wb_data_src_mem)
-			WB_DATA_ALU: regw_data = alu_out_mem;
-			WB_DATA_MEM: regw_data = mem_din;
-			WB_DATA_LINK: regw_data = inst_addr_next_exe;  // linked address is the next one of the delay slot
-			WB_DATA_REGA: regw_data = opa_mem;
+		regw_data_wb = alu_out_wb;
+		case (wb_data_src_wb)
+			WB_DATA_ALU: regw_data_wb = alu_out_wb;
+			WB_DATA_MEM: regw_data_wb = mem_din_wb;
+			WB_DATA_LINK: regw_data_wb = alu_out_wb;
 		endcase
 	end
 	

@@ -31,29 +31,22 @@ module regfile (
 	reg [DATA_BITS-1:0] regfile [1:(1<<ADDR_BITS)-1];  // $zero is always zero
 	
 	// write
-	always @(posedge clk) begin
+	always @(negedge clk) begin
 		if (en_w && addr_w != 0)
 			regfile[addr_w] <= data_w;
 	end
 	
 	// read
-	always @(negedge clk) begin
-		data_a <= addr_a == 0 ? 0 : regfile[addr_a];
-		data_b <= addr_b == 0 ? 0 : regfile[addr_b];
-	end
-	/*always @(*) begin
+	always @(*) begin
 		data_a = addr_a == 0 ? 0 : regfile[addr_a];
 		data_b = addr_b == 0 ? 0 : regfile[addr_b];
-	end*/
+	end
 	
 	// debug
 	`ifdef DEBUG
-	always @(negedge clk) begin
-		debug_data <= debug_addr == 0 ? 0 : regfile[debug_addr];
-	end
-	/*always @(*) begin
+	always @(*) begin
 		debug_data = debug_addr == 0 ? 0 : regfile[debug_addr];
-	end*/
+	end
 	`endif
 	
 endmodule

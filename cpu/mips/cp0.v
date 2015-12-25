@@ -62,7 +62,9 @@ module cp0 (
 	output reg mem_rst,
 	output reg mem_en,
 	input wire mem_valid,
+	output reg wb_rst,
 	output reg wb_en,
+	input wire wb_valid,
 	// MMU control
 	output reg mmu_inv,  // invalidate MMU signal
 	// CP0 registers
@@ -317,6 +319,7 @@ module cp0 (
 		exe_en = 1;
 		mem_rst = 0;
 		mem_en = 1;
+		wb_rst = 0;
 		wb_en = 1;
 		ir_en_pending = 1;
 		`ifdef DEBUG

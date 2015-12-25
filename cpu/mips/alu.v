@@ -6,7 +6,6 @@
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
 module alu (
-	input wire [31:0] inst,  // instruction
 	input wire [31:0] a, b,  // two operands
 	input wire sign,  // signed/unsigned flag
 	input wire [3:0] oper,  // operation type
@@ -19,7 +18,6 @@ module alu (
 	reg adder_mode;
 	wire [31:0] adder_result;
 	wire adder_cf, adder_of;
-	reg [4:0] shifter_b;
 	reg shifter_dirt;
 	reg shifter_rotate;
 	wire [31:0] shifter_result;
@@ -37,7 +35,7 @@ module alu (
 	
 	shifter SHIFTER (
 		.a(b),
-		.b(shifter_b),
+		.b(a[4:0]),
 		.dirt(shifter_dirt),
 		.sign(sign),
 		.rotate(shifter_rotate),
@@ -46,7 +44,6 @@ module alu (
 	
 	always @(*) begin
 		adder_mode = 0;
-		shifter_b = 0;
 		shifter_dirt = 0;
 		shifter_rotate = 0;
 		result = 0;
@@ -70,7 +67,7 @@ module alu (
 					result = {31'b0, adder_cf};
 			end
 			EXE_ALU_LUI: begin
-				result = {inst[15:0], 16'b0};
+				result = {b[15:0], 16'b0};
 			end
 			EXE_ALU_AND: begin
 				result = a & b;
@@ -85,27 +82,33 @@ module alu (
 				result = ~(a | b);
 			end
 			EXE_ALU_SLL: begin
-				shifter_b = inst[10:6];
 				shifter_dirt = 0;
 				shifter_rotate = 0;
 				result = shifter_result;
 			end
 			EXE_ALU_SRL: begin
-				shifter_b = inst[10:6];
 				shifter_dirt = 1;
-				shifter_rotate = inst[21];
+				shifter_rotate = 0;
+				result = shifter_result;
+			end
+			EXE_ALU_ROTR: begin
+				shifter_dirt = 1;
+				shifter_rotate = 1;
 				result = shifter_result;
 			end
 			EXE_ALU_SLLV: begin
-				shifter_b = a[4:0];
 				shifter_dirt = 0;
 				shifter_rotate = 0;
 				result = shifter_result;
 			end
 			EXE_ALU_SRLV: begin
-				shifter_b = a[4:0];
 				shifter_dirt = 1;
-				shifter_rotate = inst[6];
+				shifter_rotate = 0;
+				result = shifter_result;
+			end
+			EXE_ALU_ROTRV: begin
+				shifter_dirt = 1;
+				shifter_rotate = 1;
 				result = shifter_result;
 			end
 		endcase
