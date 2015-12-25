@@ -20,7 +20,7 @@ module wb_cmu (
 	input wire en_f,  // flush enable signal
 	input wire lock,  // keep current data to avoid process repeating
 	output reg stall,  // stall other components when CMU is busy
-	output reg unalign,  // address unaligned error
+	output reg align_err,  // address unaligned error
 	output reg bus_err,  // bus error
 	// wishbone master interfaces
 	input wire wbm_clk_i,
@@ -46,15 +46,6 @@ module wb_cmu (
 		LINE_WORDS_WIDTH = GET_WIDTH(LINE_WORDS-1),  // 2
 		LINE_INDEX_WIDTH = GET_WIDTH(LINE_NUM-1),  // 6
 		TAG_BITS = 32 - LINE_INDEX_WIDTH - LINE_WORDS_WIDTH - 2;  // 22
-	
-	// delay lock signal half a clock to prevent close logic loop
-	reg lock_delay;
-	always @(negedge clk) begin
-		if (rst)
-			lock_delay <= 0;
-		else
-			lock_delay <= lock;
-	end
 	
 	// cache core
 	reg cache_store;
@@ -102,6 +93,7 @@ module wb_cmu (
 	// alignment
 	reg [3:0] sel_align;
 	reg [31:0] data_align_r, data_align_w;
+	reg unalign;
 	
 	always @(*)begin
 		sel_align = 0;
@@ -238,7 +230,7 @@ module wb_cmu (
 					next_state = S_UNCACHE;
 			end
 			S_UNCACHE_LOCK: begin
-				if (lock_delay)
+				if (lock)
 					next_state = S_UNCACHE_LOCK;
 				else
 					next_state = S_IDLE;
@@ -401,14 +393,15 @@ module wb_cmu (
 	end
 	
 	// stall
-	always @(*) begin
-		stall = 0;
-		bus_err = 0;
+	always @(negedge clk) begin
+		stall <= 0;
+		align_err <= unalign;
+		bus_err <= 0;
 		if (~suspend) case (next_state)
-			S_IDLE: stall = 0;
-			S_UNCACHE_LOCK: stall = wbm_cyc_o & wbm_ack_i;
-			S_ERROR: bus_err = 1;
-			default: stall = 1;
+			S_IDLE: stall <= 0;
+			S_UNCACHE_LOCK: stall <= wbm_cyc_o & wbm_ack_i;
+			S_ERROR: bus_err <= 1;
+			default: stall <= 1;
 		endcase
 	end
 	

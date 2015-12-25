@@ -484,8 +484,8 @@ module SystemOnFPGA_Nexys3 (
 	
 	`else
 	ram #(
-		.ADDR_BITS(14),
-		.HIGH_ADDR(18'h00000)
+		.ADDR_BITS(16),
+		.HIGH_ADDR(16'h0000)
 		) RAM (
 		.wbs_clk_i(clk_bus),
 		.wbs_cyc_i(ram_cyc_i),

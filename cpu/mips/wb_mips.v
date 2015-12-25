@@ -46,10 +46,6 @@ module wb_mips (
 	output wire wd_rst  // watch dog reset, must not affect the global reset signal
 	);
 	
-	//`define NO_MMU
-	`define NO_IC
-	`define NO_DC
-	
 	`include "cpu_define.vh"
 	parameter
 		CLK_FREQ = 100;  // main clock frequency in MHz
@@ -256,7 +252,7 @@ module wb_mips (
 		.en_f(ic_inv),
 		.lock(ic_lock),
 		.stall(icache_stall),
-		.unalign(inst_unalign),
+		.align_err(inst_unalign),
 		.bus_err(inst_bus_err),
 		.wbm_clk_i(icmu_clk_i),
 		.wbm_cyc_o(icmu_cyc_o),
@@ -285,7 +281,7 @@ module wb_mips (
 		.data_w(0),
 		.lock(ic_lock),
 		.stall(icache_stall),
-		.unalign(inst_unalign),
+		.align_err(inst_unalign),
 		.bus_err(inst_bus_err),
 		.wbm_clk_i(icmu_clk_i),
 		.wbm_cyc_o(icmu_cyc_o),
@@ -378,7 +374,7 @@ module wb_mips (
 		.en_f(dcmu_en_f),
 		.lock(dcmu_lock),
 		.stall(dcache_stall),
-		.unalign(mem_unalign),
+		.align_err(mem_unalign),
 		.bus_err(mem_bus_err),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),
@@ -407,7 +403,7 @@ module wb_mips (
 		.data_w(dcmu_data_w),
 		.lock(dcmu_lock),
 		.stall(dcache_stall),
-		.unalign(mem_unalign),
+		.align_err(mem_unalign),
 		.bus_err(mem_bus_err),
 		.wbm_clk_i(dcmu_clk_i),
 		.wbm_cyc_o(dcmu_cyc_o),

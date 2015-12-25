@@ -156,7 +156,7 @@ module wb_memory_nexys3 (
 			next = 0;
 	end
 	
-	always @(posedge clk) begin
+	always @(posedge ram_clk_i) begin
 		if (rst) begin
 			curr <= 0;
 			working <= 0;
