@@ -135,8 +135,12 @@ module uart_core_tx (
 			S_DATA4: begin
 				busy = 1;
 				if (bit_done) begin
-					if (data_type == 2'b11)
-						next_state = check_en ? S_CHECK : S_STOP0;
+					if (data_type == 2'b11) begin
+						if (check_en)
+							next_state = S_CHECK;
+						else
+							next_state = S_STOP0;
+					end
 					else
 						next_state = state + 1'h1;
 				end
@@ -147,8 +151,12 @@ module uart_core_tx (
 			S_DATA5: begin
 				busy = 1;
 				if (bit_done) begin
-					if (data_type == 2'b10)
-						next_state = check_en ? S_CHECK : S_STOP0;
+					if (data_type == 2'b10) begin
+						if (check_en)
+							next_state = S_CHECK;
+						else
+							next_state = S_STOP0;
+					end
 					else
 						next_state = state + 1'h1;
 				end
@@ -159,8 +167,12 @@ module uart_core_tx (
 			S_DATA6: begin
 				busy = 1;
 				if (bit_done) begin
-					if (data_type == 2'b01)
-						next_state = check_en ? S_CHECK : S_STOP0;
+					if (data_type == 2'b01) begin
+						if (check_en)
+							next_state = S_CHECK;
+						else
+							next_state = S_STOP0;
+					end
 					else
 						next_state = state + 1'h1;
 				end
@@ -171,7 +183,10 @@ module uart_core_tx (
 			S_DATA7: begin
 				busy = 1;
 				if (bit_done) begin
-					next_state = check_en ? S_CHECK : S_STOP0;
+					if (check_en)
+						next_state = S_CHECK;
+					else
+						next_state = S_STOP0;
 				end
 				else begin
 					next_state = state;

@@ -5,7 +5,7 @@
  * VGA sync signals generator
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module vga_core_640_480_60 (
+module vga_core_sword (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire clk_base,  // base clock used to generate VGA's clock, should be at 25MHz
@@ -25,6 +25,7 @@ module vga_core_640_480_60 (
 	
 	`include "function.vh"
 	`include "vga_define.vh"
+	// TODO add different resolution support
 	
 	reg [H_COUNT_WIDTH-1:0] h_sync_start, h_sync_end, h_disp_start, h_disp_end;
 	reg [V_COUNT_WIDTH-1:0] v_sync_start, v_sync_end, v_disp_start, v_disp_end;

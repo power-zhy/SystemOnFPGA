@@ -208,12 +208,16 @@ module wb_arb (
 	always @(*) begin
 		m0_data_o = 0;
 		m0_ack_o = 0;
+		m0_err_o = 0;
 		m1_data_o = 0;
 		m1_ack_o = 0;
+		m1_err_o = 0;
 		m2_data_o = 0;
 		m2_ack_o = 0;
+		m2_err_o = 0;
 		m3_data_o = 0;
 		m3_ack_o = 0;
+		m3_err_o = 0;
 		if (curr_cyc || next_cyc) begin
 			case (master)
 				0: begin

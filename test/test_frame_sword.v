@@ -152,7 +152,9 @@ module test_frame_sword (
 		.clk(clk_dev),
 		.rst(rst_all),
 		.en({8{1'b1}}),
-		.data(disp_data),
+		.mode(1'b0),
+		.data_text(disp_data),
+		.data_graphic(),
 		.dot(disp_dot),
 		.led(disp_led),
 		.led_clk(led_clk),
@@ -230,7 +232,7 @@ module test_frame_sword (
 	*/
 	/*
 	// VGA test
-	test_vga #(
+	test_vga_sword #(
 		.CLK_FREQ(CLK_FREQ_DEV)
 		) TEST_VGA (
 		.clk(clk_dev),
@@ -243,14 +245,10 @@ module test_frame_sword (
 		.state(disp_led[7:0]),
 		.vga_h_sync(vga_h_sync),
 		.vga_v_sync(vga_v_sync),
-		.vga_red(vga_red[3:1]),
-		.vga_green(vga_green[3:1]),
-		.vga_blue(vga_blue[3:2])
+		.vga_red(vga_red),
+		.vga_green(vga_green),
+		.vga_blue(vga_blue)
 		);
-	assign
-		vga_red[0] = 0,
-		vga_green[0] = 0,
-		vga_blue[1:0] = 0;
 	`define VGA_SIG
 	*/
 	

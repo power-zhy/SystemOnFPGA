@@ -658,7 +658,7 @@ module SystemOnFPGA_Sword (
 	
 	`ifndef NO_VGA
 	// VGA
-	wb_vga #(
+	wb_vga_sword #(
 		.CLK_FREQ(CLK_FREQ_DEV),
 		.DEV_ADDR_BITS(DEV_SINGAL_ADDR_BITS)
 		) WB_VGA (
@@ -667,9 +667,9 @@ module SystemOnFPGA_Sword (
 		.clk_base(clk_25m),
 		.h_sync(vga_h_sync),
 		.v_sync(vga_v_sync),
-		.r_color(vga_red[3:1]),
-		.g_color(vga_green[3:1]),
-		.b_color(vga_blue[3:2]),
+		.r_color(vga_red),
+		.g_color(vga_green),
+		.b_color(vga_blue),
 		.wbm_clk_i(clk_bus),
 		.wbm_cyc_o(vram_cyc_o),
 		.wbm_stb_o(vram_stb_o),
@@ -690,10 +690,6 @@ module SystemOnFPGA_Sword (
 		.wbs_data_o(vga_data_o),
 		.wbs_ack_o(vga_ack_o)
 		);
-	assign
-		vga_red[0] = vga_red[3],
-		vga_green[0] = vga_green[3],
-		vga_blue[1:0] = vga_blue[3:2];
 	`else
 	assign
 		vram_cyc_o = 0,

@@ -117,18 +117,21 @@ module wb_board_sword (
 	
 	// outputs
 	wire [15:0] led;
+	wire mode;
 	wire [7:0] en, dot;
 	wire [31:0] data;
 	
 	`ifdef DEBUG
 	assign
 		led = debug_en ? debug_led : reg_led,
+		mode = debug_en ? 1'b0 : reg_disp_mode,
 		en = debug_en ? 8'hFF : reg_en,
 		data = debug_en ? debug_data : reg_disp_text,
 		dot = debug_en ? debug_dot : reg_dot;
 	`else
 	assign
 		led = reg_led,
+		mode = reg_disp_mode,
 		en = reg_en,
 		data = reg_disp_text,
 		dot = reg_dot;
@@ -140,7 +143,9 @@ module wb_board_sword (
 		.clk(clk),
 		.rst(rst),
 		.en(en),
-		.data(data),
+		.mode(mode),
+		.data_text(data),
+		.data_graphic(reg_disp_graphic),
 		.dot(dot),
 		.led(led),
 		.led_clk(led_clk),
@@ -158,7 +163,14 @@ module wb_board_sword (
 		wbs_data_o <= 0;
 		wbs_ack_o <= 0;
 		if (rst) begin
+			reg_btn_mode <= 0;
+			reg_scan_out <= 0;
+			reg_led <= 0;
+			reg_disp_mode <= 0;
 			reg_disp_text <= 0;
+			reg_disp_graphic <= 0;
+			reg_en <= 0;
+			reg_dot <= 0;
 			wbs_data_o <= 0;
 			wbs_ack_o <= 0;
 		end
@@ -250,7 +262,8 @@ module wb_board_sword (
 	wire [35:0] reg_in;
 	assign
 		reg_in = {switch, reg_btn};
-	reg [35:0] in_prev;
+	
+	reg [35:0] in_prev = 0;
 	always @(posedge clk) begin
 		if (rst)
 			in_prev <= 0;

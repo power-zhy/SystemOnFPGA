@@ -123,7 +123,9 @@ module test_frame_nexys3 (
 		.clk(clk_sys),
 		.rst(1'b0),
 		.en(4'b1111),
-		.data(btn_d_buf ? disp_data[31:16] : disp_data[15:0]),
+		.mode(1'b0),
+		.data_text(btn_d_buf ? disp_data[31:16] : disp_data[15:0]),
+		.data_graphic(),
 		.dot(btn_d_buf ? disp_dot[7:4] : disp_dot[3:0]),
 		.segment(segment),
 		.anode(anode)
@@ -136,7 +138,7 @@ module test_frame_nexys3 (
 		//mem_data = mem_oe_n ? mem_dout : {16{1'bz}},
 		mem_din = mem_data;
 	
-	
+	/*
 	// PSRAM test
 	test_psram_nexys3 #(
 		.CLK_FREQ(CLK_FREQ_MEM)
@@ -166,7 +168,7 @@ module test_frame_nexys3 (
 		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define RAM_SIG
-	
+	*/
 	/*
 	// PPCM test
 	test_ppcm_nexys3 #(
@@ -194,7 +196,7 @@ module test_frame_nexys3 (
 	*/
 	/*
 	// VGA test
-	test_vga #(
+	test_vga_nexys3 #(
 		.CLK_FREQ(CLK_FREQ_DEV)
 		) TEST_VGA (
 		.clk(clk_dev),
@@ -216,7 +218,7 @@ module test_frame_nexys3 (
 	`define DISPLAY_SIG
 	`define VGA_SIG
 	*/
-	/*
+	
 	// KEYBOARD test
 	test_ps2 #(
 		.CLK_FREQ(CLK_FREQ_DEV)
@@ -236,7 +238,7 @@ module test_frame_nexys3 (
 		disp_dot = 0;
 	`define DISPLAY_SIG
 	`define KEYBOARD_SIG
-	*/
+	
 	/*
 	// UART test
 	test_uart #(

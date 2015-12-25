@@ -154,7 +154,7 @@ module mmu (
 			S_OP1: if (ack && ~data[0]) begin
 				tlb_en_w = 1;
 				tlb_addr_w = logical;
-				tlb_data_w = data;
+				tlb_data_w = {data[31:12], data[4:0]};
 			end
 			S_OP2: if (ack) begin
 				tlb_en_w = 1;

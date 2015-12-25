@@ -1,7 +1,7 @@
 `include "define.vh"
 
 
-module test_vga (
+module test_vga_nexys3 (
 	input wire clk,
 	input wire clk_base,
 	input wire clk_bus,
@@ -50,7 +50,7 @@ module test_vga (
 	wire [31:0] wb_data;
 	wire wb_ack;
 	
-	wb_vga #(
+	wb_vga_nexys3 #(
 		.CLK_FREQ(CLK_FREQ),
 		.DEV_ADDR_BITS(8)
 		) WB_VGA (

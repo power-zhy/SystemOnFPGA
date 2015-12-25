@@ -5,7 +5,7 @@
  * VGA sync signals generator
  * Author: Zhao, Hongyu  <power_zhy@foxmail.com>
  */
-module vga_core (
+module vga_core_nexys3 (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire clk_base,  // base clock used to generate VGA's clock, should be at 100MHz

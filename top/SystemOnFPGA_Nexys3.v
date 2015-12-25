@@ -652,7 +652,7 @@ module SystemOnFPGA_Nexys3 (
 	
 	`ifndef NO_VGA
 	// VGA
-	wb_vga #(
+	wb_vga_nexys3 #(
 		.CLK_FREQ(CLK_FREQ_DEV),
 		.DEV_ADDR_BITS(DEV_SINGAL_ADDR_BITS)
 		) WB_VGA (

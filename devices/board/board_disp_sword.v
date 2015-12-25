@@ -9,7 +9,9 @@ module board_disp_sword (
 	input wire clk,  // main clock
 	input wire rst,  // synchronous reset
 	input wire [7:0] en,  // enable for each tube
-	input wire [31:0] data,  // data to display
+	input wire mode,  // 0 for text mode, 1 for graphic mode
+	input wire [31:0] data_text,  // text data to display
+	input wire [63:0] data_graphic,  // graphic data to display
 	input wire [7:0] dot,  // enable for each dot
 	input wire [15:0] led,  // LED display
 	// LED interfaces
@@ -58,15 +60,19 @@ module board_disp_sword (
 		end
 	endfunction
 	
-	wire [63:0] segment;
+	wire [63:0] segment, segment_text, segment_graphic;
 	
 	genvar i;
 	generate for (i=0; i<8; i=i+1) begin: SEG_GEN
 		assign
-			segment[8*i+7] = dot[i],
-			segment[8*i+6-:7] = en[i] ? digit2seg(data[4*i+3-:4]) : 7'b0;
+			segment_text[8*i+7] = dot[i],
+			segment_text[8*i+6-:7] = en[i] ? digit2seg(data_text[4*i+3-:4]) : 7'b0,
+			segment_graphic[8*i+7-:8] = en[i] ? data_graphic[8*i+7-:8] : 8'b0;
 	end
 	endgenerate
+	
+	assign
+		segment = mode ? segment_graphic : segment_text;
 	
 	wire led_start, seg_start;
 	wire led_clr, seg_clr;
