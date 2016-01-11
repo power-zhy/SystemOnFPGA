@@ -242,7 +242,7 @@ module datapath (
 			else if (regw_addr_mem == addr_rs && wb_wen_mem) begin
 				case (wb_data_src_mem)
 					WB_DATA_ALU: data_rs_ctrl = alu_out_mem;
-					WB_DATA_MEM: reg_stall = 1;
+					WB_DATA_MEM: data_rs_ctrl = mem_din;
 					WB_DATA_LINK: data_rs_ctrl = alu_out_mem;
 				endcase
 			end
@@ -258,7 +258,7 @@ module datapath (
 			else if (regw_addr_mem == addr_rt && wb_wen_mem) begin
 				case (wb_data_src_mem)
 					WB_DATA_ALU: data_rt_ctrl = alu_out_mem;
-					WB_DATA_MEM: reg_stall = 1;
+					WB_DATA_MEM: data_rt_ctrl = mem_din;
 					WB_DATA_LINK: data_rt_ctrl = alu_out_mem;
 				endcase
 			end

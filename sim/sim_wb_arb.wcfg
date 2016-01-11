@@ -2,14 +2,6 @@
 <wave_config>
    <wave_state>
    </wave_state>
-   <db_ref_list>
-      <db_ref path="D:/Verilog/SystemOnFPGA/sim_wb_arb_isim_beh.wdb" id="1" type="auto">
-         <top_modules>
-            <top_module name="glbl" />
-            <top_module name="sim_wb_arb" />
-         </top_modules>
-      </db_ref>
-   </db_ref_list>
    <WVObjectSize size="12" />
    <wvobject fp_name="/sim_wb_arb/uut/wb_clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">wb_clk</obj_property>
